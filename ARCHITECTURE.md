@@ -1,40 +1,31 @@
-# Architecture v0.2
+# Architecture v0.3
 
-## Logical layers
-
-presentation -> application/use cases -> domain -> data/infrastructure
-
-## Feature boundaries
-
-features/
-- time_study/
-- downtime/
-- line_balance/
-- vsm/
-- value_analysis/
-- four_m/
-- hr/
-- improvement/
-- training/
-- reports/
-- security/
-
-## Current milestone
+## Current milestone: Time Study foundation
 
 Implemented:
-- Material 3 app shell
 - Home dashboard
-- Six module entry cards
-- Widget smoke test
-- CI analyze/test/release APK pipeline
-- Android generation when android/ is absent
+- Time Study navigation
+- Cyclic / non-cyclic session selection
+- Session name
+- Basic live stopwatch
+- Add/remove work elements
+- Productive/non-productive domain classification
+- Widget tests for navigation and Time Study opening
 
-Deferred intentionally:
-- database
-- Excel/PPTX dependencies
-- authentication
-- production data
-- calculations
-- VSM editor
+Intentionally deferred:
+- persistent database
+- cycle records
+- automatic lap/cycle capture
+- rating
+- allowance
+- Standard Time calculation
+- SOS/JES and STS/TIS workflows
+- Excel import/export
 
-Next feature milestone: Time Study domain modelling.
+## Design rule
+
+The stopwatch is a UI prototype only at this stage. Production measurement data must
+be persisted through a domain/application layer before the feature is considered complete.
+
+Next milestone:
+Time Study cycle recording + validation + persistent domain model.

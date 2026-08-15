@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../time_study/presentation/time_study_page.dart';
+
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
@@ -96,6 +98,15 @@ class _ModuleCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
+          if (module.title == 'Time Study') {
+            Navigator.of(context).push(
+              MaterialPageRoute<void>(
+                builder: (_) => const TimeStudyPage(),
+              ),
+            );
+            return;
+          }
+
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(content: Text('${module.title}: keyingi bosqichda ochiladi')),
           );
