@@ -1,31 +1,30 @@
-# Architecture v0.3
-
-## Current milestone: Time Study foundation
+# Architecture v0.4
 
 Implemented:
-- Home dashboard
-- Time Study navigation
-- Cyclic / non-cyclic session selection
-- Session name
-- Basic live stopwatch
-- Add/remove work elements
-- Productive/non-productive domain classification
-- Widget tests for navigation and Time Study opening
+- Structured CycleRecord domain model
+- Separate TimeStudyCalculator
+- Start / Finish / Reset cycle controls
+- Cycle list with sequence numbers
+- Cycle summary: count, average, min, max, range
+- Cycle deletion and re-numbering
+- Unit tests for calculations
+- Widget test for recording a cycle
 
-Intentionally deferred:
+Deferred:
 - persistent database
-- cycle records
-- automatic lap/cycle capture
+- per-element lap timing
 - rating
 - allowance
-- Standard Time calculation
-- SOS/JES and STS/TIS workflows
-- Excel import/export
+- Normal Time / Standard Time
+- SOS/JES and STS/TIS
+- Excel/PPTX
+- authentication/security
 
-## Design rule
+Error-proofing:
+- Finish disabled until Start
+- Start disabled while running
+- Reset only while running
+- zero-duration cycle is not saved
+- calculation logic is isolated and tested
 
-The stopwatch is a UI prototype only at this stage. Production measurement data must
-be persisted through a domain/application layer before the feature is considered complete.
-
-Next milestone:
-Time Study cycle recording + validation + persistent domain model.
+Next: per-element timing and validation.
