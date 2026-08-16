@@ -21,7 +21,7 @@ void main() {
     await tester.tap(find.text('Start cycle'));
 
     await tester.runAsync(() async {
-      await Future<void>.delayed(const Duration(milliseconds: 150));
+      await Future<void>.delayed(const Duration(milliseconds: 200));
     });
 
     await tester.tap(find.text('Finish cycle'));
