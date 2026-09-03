@@ -1,10 +1,13 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
+
 import '../application/time_study_calculator.dart';
 import '../domain/time_study_models.dart';
 
 class TimeStudyPage extends StatefulWidget {
   const TimeStudyPage({super.key});
+
   @override
   State<TimeStudyPage> createState() => _TimeStudyPageState();
 }
@@ -117,10 +120,14 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          Text('Xronometraj sessiyasi',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            'Xronometraj sessiyasi',
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
-          const Text('Cycle vaqtlarini ketma-ket yozib borish. Rating, allowance va Standard Time keyingi bosqichda qo‘shiladi.'),
+          const Text(
+            'Cycle vaqtlarini ketma-ket yozib borish. Rating, allowance va Standard Time keyingi bosqichda qo‘shiladi.',
+          ),
           const SizedBox(height: 20),
           TextField(
             controller: _nameController,
@@ -145,8 +152,10 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Text(_format(_stopwatch.elapsed),
-                      style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700)),
+                  Text(
+                    _format(_stopwatch.elapsed),
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+                  ),
                   const SizedBox(height: 16),
                   Wrap(
                     spacing: 10,
@@ -192,54 +201,78 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             ),
           ),
           const SizedBox(height: 20),
-          Text('Cycle yozuvlari (${_cycles.length})',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700)),
+          Text(
+            'Cycle yozuvlari (${_cycles.length})',
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+          ),
           const SizedBox(height: 8),
           if (_cycles.isEmpty)
-            const Card(child: Padding(
-              padding: EdgeInsets.all(18),
-              child: Text('Hali cycle yozilmagan. Start cycle → Finish cycle orqali o‘lchang.'),
-            ))
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(18),
+                child: Text('Hali cycle yozilmagan. Start cycle → Finish cycle orqali o‘lchang.'),
+              ),
+            )
           else
-            ..._cycles.asMap().entries.map((e) => Card(
-              child: ListTile(
-                leading: CircleAvatar(child: Text('${e.value.number}')),
-                title: Text(_format(e.value.duration)),
-                subtitle: const Text('Cycle time'),
-                trailing: IconButton(
-                  onPressed: () => setState(() {
-                    _cycles.removeAt(e.key);
-                    for (var i = 0; i < _cycles.length; i++) {
-                      final c = _cycles[i];
-                      _cycles[i] = CycleRecord(number: i + 1, duration: c.duration, recordedAt: c.recordedAt);
-                    }
-                  }),
-                  icon: const Icon(Icons.delete_outline),
+            ..._cycles.asMap().entries.map(
+              (e) => Card(
+                child: ListTile(
+                  leading: CircleAvatar(child: Text('${e.value.number}')),
+                  title: Text(_format(e.value.duration)),
+                  subtitle: const Text('Cycle time'),
+                  trailing: IconButton(
+                    onPressed: () => setState(() {
+                      _cycles.removeAt(e.key);
+                      for (var i = 0; i < _cycles.length; i++) {
+                        final c = _cycles[i];
+                        _cycles[i] = CycleRecord(
+                          number: i + 1,
+                          duration: c.duration,
+                          recordedAt: c.recordedAt,
+                        );
+                      }
+                    }),
+                    icon: const Icon(Icons.delete_outline),
+                  ),
                 ),
               ),
-            )),
+            ),
           const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: Text('Ish elementlari (${_elements.length})',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700))),
-              FilledButton.tonalIcon(onPressed: _addElement, icon: const Icon(Icons.add), label: const Text('Qo‘shish')),
+              Expanded(
+                child: Text(
+                  'Ish elementlari (${_elements.length})',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                ),
+              ),
+              FilledButton.tonalIcon(
+                onPressed: _addElement,
+                icon: const Icon(Icons.add),
+                label: const Text('Qo‘shish'),
+              ),
             ],
           ),
           const SizedBox(height: 8),
           if (_elements.isEmpty)
-            const Card(child: Padding(
-              padding: EdgeInsets.all(18),
-              child: Text('Ishni o‘lchanadigan elementlarga ajrating.'),
-            ))
-          else
-            ..._elements.asMap().entries.map((e) => Card(
-              child: ListTile(
-                leading: CircleAvatar(child: Text('${e.key + 1}')),
-                title: Text(e.value.name),
-                subtitle: Text(e.value.type == WorkElementType.productive ? 'Samarali ish' : 'Samarasiz ish'),
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(18),
+                child: Text('Ishni o‘lchanadigan elementlarga ajrating.'),
               ),
-            )),
+            )
+          else
+            ..._elements.asMap().entries.map(
+              (e) => Card(
+                child: ListTile(
+                  leading: CircleAvatar(child: Text('${e.key + 1}')),
+                  title: Text(e.value.name),
+                  subtitle: Text(
+                    e.value.type == WorkElementType.productive ? 'Samarali ish' : 'Samarasiz ish',
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -250,13 +283,20 @@ class _Metric extends StatelessWidget {
   const _Metric(this.label, this.value);
   final String label;
   final String value;
+
   @override
   Widget build(BuildContext context) => SizedBox(
-    width: 100,
-    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      Text(label, style: Theme.of(context).textTheme.labelMedium),
-      const SizedBox(height: 4),
-      Text(value, style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700)),
-    ]),
-  );
+        width: 100,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: Theme.of(context).textTheme.labelMedium),
+            const SizedBox(height: 4),
+            Text(
+              value,
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
+      );
 }

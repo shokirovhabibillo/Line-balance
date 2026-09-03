@@ -9,6 +9,9 @@ void main() {
     final s = calculator.summarize(const []);
     expect(s.count, 0);
     expect(s.average, isNull);
+    expect(s.minimum, isNull);
+    expect(s.maximum, isNull);
+    expect(s.range, isNull);
   });
 
   test('summary calculates average min max range', () {

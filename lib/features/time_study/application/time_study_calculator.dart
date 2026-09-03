@@ -28,8 +28,10 @@ class TimeStudyCalculator {
         range: null,
       );
     }
+
     final values = cycles.map((e) => e.duration.inMicroseconds).toList()..sort();
     final total = values.fold<int>(0, (a, b) => a + b);
+
     return TimeStudySummary(
       count: values.length,
       average: Duration(microseconds: total ~/ values.length),
