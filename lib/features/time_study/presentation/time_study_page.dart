@@ -203,6 +203,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           const SizedBox(height: 20),
           Text(
             'Cycle yozuvlari (${_cycles.length})',
+            key: const Key('cycle_records_header'),
             style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 8),
