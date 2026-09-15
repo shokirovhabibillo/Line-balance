@@ -27,4 +27,46 @@ void main() {
     expect(s.maximum, const Duration(seconds: 50));
     expect(s.range, const Duration(seconds: 10));
   });
+
+  test('element summary calculates average min max and total', () {
+    const element = WorkElement(
+      id: 'e1',
+      name: 'Element 1',
+      type: WorkElementType.productive,
+    );
+
+    final cycles = [
+      CycleRecord(
+        number: 1,
+        duration: const Duration(seconds: 10),
+        recordedAt: DateTime(2026),
+        elements: [
+          ElementRecord(
+            elementId: 'e1',
+            duration: const Duration(seconds: 4),
+            recordedAt: DateTime(2026),
+          ),
+        ],
+      ),
+      CycleRecord(
+        number: 2,
+        duration: const Duration(seconds: 12),
+        recordedAt: DateTime(2026),
+        elements: [
+          ElementRecord(
+            elementId: 'e1',
+            duration: const Duration(seconds: 6),
+            recordedAt: DateTime(2026),
+          ),
+        ],
+      ),
+    ];
+
+    final result = calculator.summarizeElements(cycles, const [element]).single;
+    expect(result.count, 2);
+    expect(result.average, const Duration(seconds: 5));
+    expect(result.minimum, const Duration(seconds: 4));
+    expect(result.maximum, const Duration(seconds: 6));
+    expect(result.total, const Duration(seconds: 10));
+  });
 }

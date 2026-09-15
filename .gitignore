@@ -1,9 +1,16 @@
+# Flutter/Dart
 .dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.packages
-.pub-cache/
+.pub/
 build/
 coverage/
-android/.gradle/
-android/local.properties
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+android/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db

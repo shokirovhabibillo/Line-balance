@@ -15,12 +15,16 @@ class TimeStudyPage extends StatefulWidget {
 class _TimeStudyPageState extends State<TimeStudyPage> {
   final _nameController = TextEditingController();
   final _calculator = const TimeStudyCalculator();
-  WorkType _workType = WorkType.cyclic;
   final _cycles = <CycleRecord>[];
   final _elements = <WorkElement>[];
+  final _currentElementRecords = <ElementRecord>[];
+
+  WorkType _workType = WorkType.cyclic;
   Timer? _timer;
   final _stopwatch = Stopwatch();
-  bool _running = false;
+  bool _runningCycle = false;
+  bool _runningElement = false;
+  int _elementIndex = 0;
 
   @override
   void dispose() {
@@ -29,61 +33,123 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
     super.dispose();
   }
 
-  void _start() {
-    if (_running) return;
+  void _startCycle() {
+    if (_runningCycle) return;
+
+    _currentElementRecords.clear();
+    _elementIndex = 0;
     _stopwatch
       ..reset()
       ..start();
-    _running = true;
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-      if (mounted) setState(() {});
-    });
+    _runningCycle = true;
+    _startRefresh();
     setState(() {});
   }
 
-  void _finish() {
-    if (!_running) return;
-    _stopwatch.stop();
+  void _startRefresh() {
     _timer?.cancel();
-    final duration = _stopwatch.elapsed;
-    if (duration > Duration.zero) {
-      _cycles.add(CycleRecord(
-        number: _cycles.length + 1,
-        duration: duration,
-        recordedAt: DateTime.now(),
-      ));
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  void _startElement() {
+    if (!_runningCycle || _runningElement || _elementIndex >= _elements.length) {
+      return;
     }
-    _running = false;
+
+    _stopwatch
+      ..reset()
+      ..start();
+    _runningElement = true;
+    setState(() {});
+  }
+
+  void _finishElement() {
+    if (!_runningElement) return;
+
+    _stopwatch.stop();
+    final duration = _stopwatch.elapsed;
+    final element = _elements[_elementIndex];
+
+    if (duration > Duration.zero) {
+      _currentElementRecords.add(
+        ElementRecord(
+          elementId: element.id,
+          duration: duration,
+          recordedAt: DateTime.now(),
+        ),
+      );
+    }
+
+    _runningElement = false;
+    _elementIndex++;
     _stopwatch.reset();
     setState(() {});
   }
 
-  void _reset() {
+  void _finishCycle() {
+    if (!_runningCycle || _runningElement) return;
+
+    _timer?.cancel();
+    _stopwatch.stop();
+
+    final elementTotal = _currentElementRecords.fold<Duration>(
+      Duration.zero,
+      (total, record) => total + record.duration,
+    );
+
+    final duration = elementTotal > Duration.zero
+        ? elementTotal
+        : _stopwatch.elapsed;
+
+    if (duration > Duration.zero) {
+      _cycles.add(
+        CycleRecord(
+          number: _cycles.length + 1,
+          duration: duration,
+          recordedAt: DateTime.now(),
+          elements: List.unmodifiable(_currentElementRecords),
+        ),
+      );
+    }
+
+    _runningCycle = false;
+    _runningElement = false;
+    _elementIndex = 0;
+    _currentElementRecords.clear();
+    _stopwatch.reset();
+    setState(() {});
+  }
+
+  void _resetCycle() {
     _timer?.cancel();
     _stopwatch
       ..stop()
       ..reset();
-    _running = false;
+    _runningCycle = false;
+    _runningElement = false;
+    _elementIndex = 0;
+    _currentElementRecords.clear();
     setState(() {});
   }
 
-  String _format(Duration d) {
-    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
-    final t = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
-    return '${d.inHours.toString().padLeft(2, '0')}:$m:$s.$t';
-  }
+  Future<String?> _askElementName({
+    String? initial,
+    required String title,
+    required String action,
+  }) async {
+    final controller = TextEditingController(text: initial);
 
-  void _addElement() {
-    final controller = TextEditingController();
-    showDialog<void>(
+    final result = await showDialog<String>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Ish elementi qo‘shish'),
+        title: Text(title),
         content: TextField(
           controller: controller,
           autofocus: true,
           decoration: const InputDecoration(labelText: 'Element nomi'),
+          textInputAction: TextInputAction.done,
         ),
         actions: [
           TextButton(
@@ -93,26 +159,85 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           FilledButton(
             onPressed: () {
               final name = controller.text.trim();
-              if (name.isEmpty) return;
-              setState(() {
-                _elements.add(WorkElement(
-                  id: DateTime.now().microsecondsSinceEpoch.toString(),
-                  name: name,
-                  type: WorkElementType.productive,
-                ));
-              });
-              Navigator.pop(context);
+              if (name.isNotEmpty) Navigator.pop(context, name);
             },
-            child: const Text('Qo‘shish'),
+            child: Text(action),
           ),
         ],
       ),
-    ).whenComplete(controller.dispose);
+    );
+
+    controller.dispose();
+    return result;
+  }
+
+  Future<void> _addElement() async {
+    final name = await _askElementName(
+      title: 'Ish elementi qo‘shish',
+      action: 'Qo‘shish',
+    );
+    if (name == null) return;
+
+    setState(() {
+      _elements.add(
+        WorkElement(
+          id: DateTime.now().microsecondsSinceEpoch.toString(),
+          name: name,
+          type: WorkElementType.productive,
+        ),
+      );
+    });
+  }
+
+  Future<void> _editElement(int index) async {
+    final element = _elements[index];
+    final name = await _askElementName(
+      initial: element.name,
+      title: 'Ish elementini tahrirlash',
+      action: 'Saqlash',
+    );
+    if (name == null) return;
+
+    setState(() {
+      _elements[index] = element.copyWith(name: name);
+    });
+  }
+
+  void _deleteElement(int index) {
+    if (_runningCycle) return;
+    setState(() => _elements.removeAt(index));
+  }
+
+  void _toggleElementType(int index) {
+    if (_runningCycle) return;
+    final element = _elements[index];
+    setState(() {
+      _elements[index] = element.copyWith(
+        type: element.type == WorkElementType.productive
+            ? WorkElementType.nonProductive
+            : WorkElementType.productive,
+      );
+    });
+  }
+
+  String _format(Duration d) {
+    final m = d.inMinutes.remainder(60).toString().padLeft(2, '0');
+    final s = d.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final t = (d.inMilliseconds.remainder(1000) ~/ 100).toString();
+    return '${d.inHours.toString().padLeft(2, '0')}:$m:$s.$t';
+  }
+
+  String _elementName(String id) {
+    for (final element in _elements) {
+      if (element.id == id) return element.name;
+    }
+    return 'Noma’lum element';
   }
 
   @override
   Widget build(BuildContext context) {
     final summary = _calculator.summarize(_cycles);
+    final elementSummaries = _calculator.summarizeElements(_cycles, _elements);
     String fmt(Duration? d) => d == null ? '—' : _format(d);
 
     return Scaffold(
@@ -122,11 +247,13 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
         children: [
           Text(
             'Xronometraj sessiyasi',
-            style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
           ),
           const SizedBox(height: 8),
           const Text(
-            'Cycle vaqtlarini ketma-ket yozib borish. Rating, allowance va Standard Time keyingi bosqichda qo‘shiladi.',
+            'Cycle vaqtini va cycle ichidagi ish elementlarini ketma-ket o‘lchash.',
           ),
           const SizedBox(height: 20),
           TextField(
@@ -140,8 +267,16 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           const SizedBox(height: 16),
           SegmentedButton<WorkType>(
             segments: const [
-              ButtonSegment(value: WorkType.cyclic, label: Text('Siklik'), icon: Icon(Icons.repeat)),
-              ButtonSegment(value: WorkType.nonCyclic, label: Text('Nosiklik'), icon: Icon(Icons.shuffle)),
+              ButtonSegment(
+                value: WorkType.cyclic,
+                label: Text('Siklik'),
+                icon: Icon(Icons.repeat),
+              ),
+              ButtonSegment(
+                value: WorkType.nonCyclic,
+                label: Text('Nosiklik'),
+                icon: Icon(Icons.shuffle),
+              ),
             ],
             selected: {_workType},
             onSelectionChanged: (v) => setState(() => _workType = v.first),
@@ -154,7 +289,21 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                 children: [
                   Text(
                     _format(_stopwatch.elapsed),
-                    style: Theme.of(context).textTheme.displaySmall?.copyWith(fontWeight: FontWeight.w700),
+                    key: const Key('time_study_timer'),
+                    style: Theme.of(context).textTheme.displaySmall?.copyWith(
+                          fontWeight: FontWeight.w700,
+                        ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _runningElement
+                        ? 'Element ${_elementIndex + 1} / ${_elements.length}'
+                        : _runningCycle
+                            ? (_elements.isEmpty
+                                ? 'Cycle davom etmoqda'
+                                : 'Keyingi elementni boshlang')
+                            : 'Yangi cycle boshlashga tayyor',
+                    key: const Key('time_study_status'),
                   ),
                   const SizedBox(height: 16),
                   Wrap(
@@ -163,22 +312,51 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                     alignment: WrapAlignment.center,
                     children: [
                       FilledButton.icon(
-                        onPressed: _running ? null : _start,
+                        onPressed: _runningCycle ? null : _startCycle,
                         icon: const Icon(Icons.play_arrow),
                         label: const Text('Start cycle'),
                       ),
                       FilledButton.tonalIcon(
-                        onPressed: _running ? _finish : null,
+                        onPressed: _runningCycle &&
+                                !_runningElement &&
+                                _elementIndex < _elements.length
+                            ? _startElement
+                            : null,
+                        icon: const Icon(Icons.play_circle_outline),
+                        label: Text(
+                          _elements.isEmpty
+                              ? 'Element yo‘q'
+                              : 'Start element ${_elementIndex + 1}',
+                        ),
+                      ),
+                      FilledButton.tonalIcon(
+                        onPressed: _runningElement ? _finishElement : null,
                         icon: const Icon(Icons.flag_outlined),
+                        label: const Text('Finish element'),
+                      ),
+                      FilledButton.icon(
+                        onPressed: _runningCycle && !_runningElement
+                            ? _finishCycle
+                            : null,
+                        icon: const Icon(Icons.stop_circle_outlined),
                         label: const Text('Finish cycle'),
                       ),
                       OutlinedButton.icon(
-                        onPressed: _running ? _reset : null,
+                        onPressed: _runningCycle ? _resetCycle : null,
                         icon: const Icon(Icons.restart_alt),
                         label: const Text('Reset'),
                       ),
                     ],
                   ),
+                  if (_elements.isNotEmpty && _runningCycle) ...[
+                    const SizedBox(height: 14),
+                    Text(
+                      _elementIndex >= _elements.length
+                          ? 'Barcha elementlar o‘lchandi. Finish cycle bosing.'
+                          : 'Navbatdagi element: ${_elements[_elementIndex].name}',
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
                 ],
               ),
             ),
@@ -201,54 +379,19 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             ),
           ),
           const SizedBox(height: 20),
-          Text(
-            'Cycle yozuvlari (${_cycles.length})',
-            key: const Key('cycle_records_header'),
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
-          ),
-          const SizedBox(height: 8),
-          if (_cycles.isEmpty)
-            const Card(
-              child: Padding(
-                padding: EdgeInsets.all(18),
-                child: Text('Hali cycle yozilmagan. Start cycle → Finish cycle orqali o‘lchang.'),
-              ),
-            )
-          else
-            ..._cycles.asMap().entries.map(
-              (e) => Card(
-                child: ListTile(
-                  leading: CircleAvatar(child: Text('${e.value.number}')),
-                  title: Text(_format(e.value.duration)),
-                  subtitle: const Text('Cycle time'),
-                  trailing: IconButton(
-                    onPressed: () => setState(() {
-                      _cycles.removeAt(e.key);
-                      for (var i = 0; i < _cycles.length; i++) {
-                        final c = _cycles[i];
-                        _cycles[i] = CycleRecord(
-                          number: i + 1,
-                          duration: c.duration,
-                          recordedAt: c.recordedAt,
-                        );
-                      }
-                    }),
-                    icon: const Icon(Icons.delete_outline),
-                  ),
-                ),
-              ),
-            ),
-          const SizedBox(height: 20),
           Row(
             children: [
               Expanded(
                 child: Text(
                   'Ish elementlari (${_elements.length})',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700),
+                  key: const Key('work_elements_header'),
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
                 ),
               ),
               FilledButton.tonalIcon(
-                onPressed: _addElement,
+                onPressed: _runningCycle ? null : _addElement,
                 icon: const Icon(Icons.add),
                 label: const Text('Qo‘shish'),
               ),
@@ -259,18 +402,95 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(18),
-                child: Text('Ishni o‘lchanadigan elementlarga ajrating.'),
+                child: Text(
+                  'Ishni o‘lchanadigan elementlarga ajrating. Element qo‘shilgach, cycle ichida har birini alohida o‘lchash mumkin.',
+                ),
               ),
             )
           else
             ..._elements.asMap().entries.map(
-              (e) => Card(
-                child: ListTile(
-                  leading: CircleAvatar(child: Text('${e.key + 1}')),
-                  title: Text(e.value.name),
-                  subtitle: Text(
-                    e.value.type == WorkElementType.productive ? 'Samarali ish' : 'Samarasiz ish',
+              (e) {
+                final element = e.value;
+                final elementSummary = elementSummaries[e.key];
+
+                return Card(
+                  key: ValueKey(element.id),
+                  child: ListTile(
+                    leading: CircleAvatar(child: Text('${e.key + 1}')),
+                    title: Text(element.name),
+                    subtitle: Text(
+                      '${element.type == WorkElementType.productive ? 'Samarali ish' : 'Samarasiz ish'}'
+                      ' • ${elementSummary.count} ta o‘lchov'
+                      ' • O‘rtacha: ${fmt(elementSummary.average)}',
+                    ),
+                    trailing: PopupMenuButton<String>(
+                      onSelected: (value) {
+                        if (value == 'edit') _editElement(e.key);
+                        if (value == 'type') _toggleElementType(e.key);
+                        if (value == 'delete') _deleteElement(e.key);
+                      },
+                      itemBuilder: (_) => [
+                        const PopupMenuItem(
+                          value: 'edit',
+                          child: Text('Tahrirlash'),
+                        ),
+                        PopupMenuItem(
+                          value: 'type',
+                          child: Text(
+                            element.type == WorkElementType.productive
+                                ? 'Samarasizga o‘tkazish'
+                                : 'Samaraliga o‘tkazish',
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: 'delete',
+                          child: Text('O‘chirish'),
+                        ),
+                      ],
+                    ),
                   ),
+                );
+              },
+            ),
+          const SizedBox(height: 20),
+          Text(
+            'Cycle yozuvlari (${_cycles.length})',
+            key: const Key('cycle_records_header'),
+            style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+          const SizedBox(height: 8),
+          if (_cycles.isEmpty)
+            const Card(
+              child: Padding(
+                padding: EdgeInsets.all(18),
+                child: Text(
+                  'Hali cycle yozilmagan. Start cycle → Finish cycle orqali o‘lchang.',
+                ),
+              ),
+            )
+          else
+            ..._cycles.map(
+              (cycle) => Card(
+                child: ExpansionTile(
+                  leading: CircleAvatar(child: Text('${cycle.number}')),
+                  title: Text(_format(cycle.duration)),
+                  subtitle: Text('${cycle.elements.length} ta element o‘lchangan'),
+                  children: [
+                    if (cycle.elements.isEmpty)
+                      const ListTile(
+                        title: Text('Bu cycle uchun element o‘lchovlari yo‘q.'),
+                      )
+                    else
+                      ...cycle.elements.map(
+                        (record) => ListTile(
+                          dense: true,
+                          title: Text(_elementName(record.elementId)),
+                          trailing: Text(_format(record.duration)),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -282,6 +502,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
 
 class _Metric extends StatelessWidget {
   const _Metric(this.label, this.value);
+
   final String label;
   final String value;
 
@@ -295,7 +516,9 @@ class _Metric extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+              style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
             ),
           ],
         ),

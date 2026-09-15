@@ -1,19 +1,9 @@
 # Line Balance Platform
 
-Industrial Engineering platform for Work Measurement, Line Balance, VSM, Downtime, Continuous Improvement and management reporting.
+## V0.5 — Time Study Element Timing
 
-## Current status
-V0.4.1 — Time Study cycle recording foundation.
+Adds work-element definitions, productive/non-productive classification,
+element timing inside cycles, element statistics, and cycle detail.
 
-## Local development
-Use the Flutter version specified by the CI workflow. The Android directory is intentionally not required in the repository; CI generates it when absent.
-
-## CI
-GitHub Actions runs:
-1. Flutter setup
-2. Android platform generation when needed
-3. `flutter pub get`
-4. `flutter analyze`
-5. `flutter test`
-6. `flutter build apk --release`
-7. APK artifact upload
+Rating, allowance, normal time and standard time are deliberately deferred
+until the observed-time layer is stable.
