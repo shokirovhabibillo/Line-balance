@@ -30,9 +30,13 @@ void main() {
 
   testWidgets('Time Study page opens', (tester) async {
     await openTimeStudy(tester);
+
+    // Check content at the top before scrolling.
+    expect(find.text('Xronometraj sessiyasi'), findsOneWidget);
+
+    // The cycle section is below the fold, so scroll to it before checking.
     await scrollToCycleRecords(tester);
 
-    expect(find.text('Xronometraj sessiyasi'), findsOneWidget);
     expect(find.byKey(const Key('cycle_records_header')), findsOneWidget);
     expect(find.text('Cycle yozuvlari (0)'), findsOneWidget);
   });
