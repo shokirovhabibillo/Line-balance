@@ -59,3 +59,30 @@ void main() {
     expect(find.text('Cycle yozuvlari (1)'), findsOneWidget);
   });
 }
+
+  testWidgets('work element dialog shows requirement and verification options',
+      (tester) async {
+    await openTimeStudy(tester);
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('work_elements_header')),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Qo‘shish'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Ish elementi qo‘shish'), findsOneWidget);
+    expect(find.text('Xavfsizlik'), findsOneWidget);
+    expect(find.text('Sifat'), findsOneWidget);
+    expect(find.text('Ketma-ketlik'), findsOneWidget);
+    expect(find.text('Qadam ichidagi ketma-ketlik'), findsOneWidget);
+    expect(find.text('QCOS'), findsOneWidget);
+    expect(find.text('Hech narsa'), findsOneWidget);
+    expect(find.text('Ko‘rish'), findsOneWidget);
+    expect(find.text('Eshitish'), findsOneWidget);
+    expect(find.text('Teginish'), findsOneWidget);
+    expect(find.text('O‘lchash'), findsOneWidget);
+    expect(find.text('Asos / standart / hujjat'), findsOneWidget);
+  });

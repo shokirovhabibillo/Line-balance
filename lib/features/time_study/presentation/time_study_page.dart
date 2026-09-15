@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 
 import '../application/time_study_calculator.dart';
+import '../data/time_study_storage.dart';
 import '../domain/time_study_models.dart';
 
 class TimeStudyPage extends StatefulWidget {
@@ -15,6 +16,7 @@ class TimeStudyPage extends StatefulWidget {
 class _TimeStudyPageState extends State<TimeStudyPage> {
   final _nameController = TextEditingController();
   final _calculator = const TimeStudyCalculator();
+  final _storage = const TimeStudyStorage();
   final _cycles = <CycleRecord>[];
   final _elements = <WorkElement>[];
   final _currentElementRecords = <ElementRecord>[];
@@ -27,10 +29,52 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
   bool _runningCycle = false;
   bool _runningElement = false;
   int _elementIndex = 0;
+  bool _loadingSession = true;
+  Future<void> _saveChain = Future<void>.value();
+
+  @override
+  void initState() {
+    super.initState();
+    _nameController.addListener(_queueSave);
+    _loadSession();
+  }
+
+  Future<void> _loadSession() async {
+    final data = await _storage.load();
+    if (!mounted) return;
+
+    if (data != null) {
+      _nameController.text = data.sessionName;
+      _workType = data.workType;
+      _elements
+        ..clear()
+        ..addAll(data.elements);
+      _cycles
+        ..clear()
+        ..addAll(data.cycles);
+    }
+
+    _loadingSession = false;
+    setState(() {});
+  }
+
+  void _queueSave() {
+    if (_loadingSession) return;
+
+    final data = TimeStudySessionData(
+      sessionName: _nameController.text.trim(),
+      workType: _workType,
+      elements: List.unmodifiable(_elements),
+      cycles: List.unmodifiable(_cycles),
+    );
+
+    _saveChain = _saveChain.then((_) => _storage.save(data));
+  }
 
   @override
   void dispose() {
     _refreshTimer?.cancel();
+    _nameController.removeListener(_queueSave);
     _nameController.dispose();
     super.dispose();
   }
@@ -48,6 +92,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
     _runningCycle = true;
     _startRefresh();
     setState(() {});
+    _queueSave();
   }
 
   void _startRefresh() {
@@ -129,6 +174,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
     _cycleStopwatch.reset();
     _elementStopwatch.reset();
     setState(() {});
+    _queueSave();
   }
 
   void _resetCycle() {
@@ -147,93 +193,234 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
     setState(() {});
   }
 
-  Future<String?> _askElementName({
-    String? initial,
-    required String title,
-    required String action,
-  }) async {
-    final controller = TextEditingController(text: initial);
+  Future<_ElementDraft?> _showElementDialog({WorkElement? initial}) async {
+    final nameController = TextEditingController(text: initial?.name);
+    final basisController = TextEditingController(text: initial?.basis);
+    var type = initial?.type ?? WorkElementType.productive;
+    final requirements = <WorkRequirement>{...?initial?.requirements};
+    final verificationMethods = <VerificationMethod>{
+      ...?initial?.verificationMethods,
+    };
 
-    final result = await showDialog<String>(
+    final result = await showDialog<_ElementDraft>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(title),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          decoration: const InputDecoration(labelText: 'Element nomi'),
-          textInputAction: TextInputAction.done,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Bekor qilish'),
-          ),
-          FilledButton(
-            onPressed: () {
-              final name = controller.text.trim();
-              if (name.isNotEmpty) {
-                Navigator.pop(context, name);
-              }
-            },
-            child: Text(action),
-          ),
-        ],
-      ),
+      builder: (dialogContext) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            final noRequirementSelected = requirements.isEmpty;
+
+            void toggleRequirement(WorkRequirement value) {
+              setDialogState(() {
+                if (value == WorkRequirement.none) return;
+                if (requirements.contains(value)) {
+                  requirements.remove(value);
+                } else {
+                  requirements.add(value);
+                }
+              });
+            }
+
+            return AlertDialog(
+              title: Text(
+                initial == null
+                    ? 'Ish elementi qo‘shish'
+                    : 'Ish elementini tahrirlash',
+              ),
+              content: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      autofocus: initial == null,
+                      decoration: const InputDecoration(
+                        labelText: 'Element nomi',
+                        border: OutlineInputBorder(),
+                      ),
+                      textInputAction: TextInputAction.next,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Ish turi',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 8),
+                    SegmentedButton<WorkElementType>(
+                      segments: const [
+                        ButtonSegment(
+                          value: WorkElementType.productive,
+                          label: Text('Samarali'),
+                        ),
+                        ButtonSegment(
+                          value: WorkElementType.nonProductive,
+                          label: Text('Samarasiz'),
+                        ),
+                      ],
+                      selected: {type},
+                      onSelectionChanged: (values) {
+                        setDialogState(() => type = values.first);
+                      },
+                    ),
+                    const SizedBox(height: 18),
+                    const Text(
+                      'Amal qilinishi kerak bo‘lgan talablar',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Bir yoki bir nechta talabni tanlash mumkin.',
+                    ),
+                    const SizedBox(height: 6),
+                    ...WorkRequirement.values
+                        .where((value) => value != WorkRequirement.none)
+                        .map(
+                          (value) => CheckboxListTile(
+                            dense: true,
+                            contentPadding: EdgeInsets.zero,
+                            value: requirements.contains(value),
+                            title: Text(_requirementLabel(value)),
+                            onChanged: (_) => toggleRequirement(value),
+                          ),
+                        ),
+                    CheckboxListTile(
+                      dense: true,
+                      contentPadding: EdgeInsets.zero,
+                      value: noRequirementSelected,
+                      title: const Text('Hech narsa'),
+                      onChanged: (_) {
+                        setDialogState(() => requirements.clear());
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Tekshirish usuli',
+                      style: TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Kerak bo‘lsa bir nechta usulni tanlang.',
+                    ),
+                    const SizedBox(height: 6),
+                    ...VerificationMethod.values.map(
+                      (value) => CheckboxListTile(
+                        dense: true,
+                        contentPadding: EdgeInsets.zero,
+                        value: verificationMethods.contains(value),
+                        title: Text(_verificationLabel(value)),
+                        onChanged: (_) {
+                          setDialogState(() {
+                            if (verificationMethods.contains(value)) {
+                              verificationMethods.remove(value);
+                            } else {
+                              verificationMethods.add(value);
+                            }
+                          });
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    TextField(
+                      controller: basisController,
+                      maxLines: 2,
+                      decoration: const InputDecoration(
+                        labelText: 'Asos / standart / hujjat',
+                        hintText:
+                            'Masalan: CVIS 009-2025; Std-275537:2025; QCOS 2344433:2025',
+                        border: OutlineInputBorder(),
+                        helperText:
+                            'Bir nechta asosni ; bilan ajratib yozish mumkin.',
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(dialogContext),
+                  child: const Text('Bekor qilish'),
+                ),
+                FilledButton(
+                  onPressed: () {
+                    final name = nameController.text.trim();
+                    if (name.isEmpty) return;
+                    Navigator.pop(
+                      dialogContext,
+                      _ElementDraft(
+                        name: name,
+                        type: type,
+                        requirements: requirements.toList(),
+                        verificationMethods: verificationMethods.toList(),
+                        basis: basisController.text.trim(),
+                      ),
+                    );
+                  },
+                  child: Text(initial == null ? 'Qo‘shish' : 'Saqlash'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
 
-    controller.dispose();
+    nameController.dispose();
+    basisController.dispose();
     return result;
   }
 
   Future<void> _addElement() async {
-    final name = await _askElementName(
-      title: 'Ish elementi qo‘shish',
-      action: 'Qo‘shish',
-    );
-    if (name == null) return;
+    final draft = await _showElementDialog();
+    if (draft == null) return;
 
     setState(() {
       _elements.add(
         WorkElement(
           id: DateTime.now().microsecondsSinceEpoch.toString(),
-          name: name,
-          type: WorkElementType.productive,
+          name: draft.name,
+          type: draft.type,
+          requirements: List.unmodifiable(draft.requirements),
+          verificationMethods: List.unmodifiable(draft.verificationMethods),
+          basis: draft.basis,
         ),
       );
     });
+    _queueSave();
   }
 
   Future<void> _editElement(int index) async {
     final element = _elements[index];
-    final name = await _askElementName(
-      initial: element.name,
-      title: 'Ish elementini tahrirlash',
-      action: 'Saqlash',
-    );
-    if (name == null) return;
+    final draft = await _showElementDialog(initial: element);
+    if (draft == null) return;
 
     setState(() {
-      _elements[index] = element.copyWith(name: name);
+      _elements[index] = element.copyWith(
+        name: draft.name,
+        type: draft.type,
+        requirements: List.unmodifiable(draft.requirements),
+        verificationMethods: List.unmodifiable(draft.verificationMethods),
+        basis: draft.basis,
+      );
     });
+    _queueSave();
   }
 
   void _deleteElement(int index) {
     if (_runningCycle) return;
     setState(() => _elements.removeAt(index));
+    _queueSave();
   }
 
-  void _toggleElementType(int index) {
+  void _moveElement(int index, int direction) {
     if (_runningCycle) return;
+    final newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= _elements.length) return;
 
-    final element = _elements[index];
     setState(() {
-      _elements[index] = element.copyWith(
-        type: element.type == WorkElementType.productive
-            ? WorkElementType.nonProductive
-            : WorkElementType.productive,
-      );
+      final element = _elements.removeAt(index);
+      _elements.insert(newIndex, element);
     });
+    _queueSave();
   }
 
   String _format(Duration d) {
@@ -260,7 +447,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Time Study')),
-      body: ListView(
+      body: Stack(
+        children: [
+          ListView(
         padding: const EdgeInsets.all(20),
         children: [
           Text(
@@ -297,7 +486,10 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
               ),
             ],
             selected: {_workType},
-            onSelectionChanged: (v) => setState(() => _workType = v.first),
+            onSelectionChanged: (v) {
+              setState(() => _workType = v.first);
+              _queueSave();
+            },
           ),
           const SizedBox(height: 20),
           Card(
@@ -434,43 +626,58 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           else
             ..._elements.asMap().entries.map(
               (e) {
+                final index = e.key;
                 final element = e.value;
-                final elementSummary = elementSummaries[e.key];
+                final elementSummary = elementSummaries[index];
 
                 return Card(
                   key: ValueKey(element.id),
-                  child: ListTile(
-                    leading: CircleAvatar(child: Text('${e.key + 1}')),
-                    title: Text(element.name),
-                    subtitle: Text(
-                      '${element.type == WorkElementType.productive ? 'Samarali ish' : 'Samarasiz ish'}'
-                      ' • ${elementSummary.count} ta o‘lchov'
-                      ' • O‘rtacha: ${fmt(elementSummary.average)}',
-                    ),
-                    trailing: PopupMenuButton<String>(
-                      onSelected: (value) {
-                        if (value == 'edit') _editElement(e.key);
-                        if (value == 'type') _toggleElementType(e.key);
-                        if (value == 'delete') _deleteElement(e.key);
-                      },
-                      itemBuilder: (_) => [
-                        const PopupMenuItem(
-                          value: 'edit',
-                          child: Text('Tahrirlash'),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: ListTile(
+                      leading: CircleAvatar(child: Text('${index + 1}')),
+                      title: Text(element.name),
+                      subtitle: _elementDetails(element, elementSummary, fmt),
+                      isThreeLine: true,
+                      trailing: SizedBox(
+                        width: 126,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            IconButton(
+                              tooltip: 'Yuqoriga',
+                              onPressed: _runningCycle || index == 0
+                                  ? null
+                                  : () => _moveElement(index, -1),
+                              icon: const Icon(Icons.arrow_upward),
+                            ),
+                            IconButton(
+                              tooltip: 'Pastga',
+                              onPressed: _runningCycle ||
+                                      index == _elements.length - 1
+                                  ? null
+                                  : () => _moveElement(index, 1),
+                              icon: const Icon(Icons.arrow_downward),
+                            ),
+                            PopupMenuButton<String>(
+                              onSelected: (value) {
+                                if (value == 'edit') _editElement(index);
+                                if (value == 'delete') _deleteElement(index);
+                              },
+                              itemBuilder: (_) => [
+                                const PopupMenuItem(
+                                  value: 'edit',
+                                  child: Text('Tahrirlash'),
+                                ),
+                                const PopupMenuItem(
+                                  value: 'delete',
+                                  child: Text('O‘chirish'),
+                                ),
+                              ],
+                            ),
+                          ],
                         ),
-                        PopupMenuItem(
-                          value: 'type',
-                          child: Text(
-                            element.type == WorkElementType.productive
-                                ? 'Samarasizga o‘tkazish'
-                                : 'Samaraliga o‘tkazish',
-                          ),
-                        ),
-                        const PopupMenuItem(
-                          value: 'delete',
-                          child: Text('O‘chirish'),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -522,10 +729,87 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                 ),
               ),
             ),
+          ),
+          if (_loadingSession)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0x99FFFFFF),
+                child: Center(child: CircularProgressIndicator()),
+              ),
+            ),
         ],
       ),
     );
   }
+
+  Widget _elementDetails(
+    WorkElement element,
+    ElementSummary summary,
+    String Function(Duration?) fmt,
+  ) {
+    final requirementText = element.requirements.isEmpty
+        ? 'Talab: Hech narsa'
+        : 'Talab: ${element.requirements.map(_requirementLabel).join(', ')}';
+    final verificationText = element.verificationMethods.isEmpty
+        ? 'Tekshirish: —'
+        : 'Tekshirish: ${element.verificationMethods.map(_verificationLabel).join(', ')}';
+    final basisText = element.basis.isEmpty ? '' : ' • Asos: ${element.basis}';
+
+    return Text(
+      '${element.type == WorkElementType.productive ? 'Samarali ish' : 'Samarasiz ish'}'
+      ' • ${summary.count} ta o‘lchov'
+      ' • O‘rtacha: ${fmt(summary.average)}\n'
+      '$requirementText • $verificationText$basisText',
+      maxLines: 4,
+      overflow: TextOverflow.ellipsis,
+    );
+  }
+
+  String _requirementLabel(WorkRequirement value) {
+    switch (value) {
+      case WorkRequirement.safety:
+        return 'Xavfsizlik';
+      case WorkRequirement.quality:
+        return 'Sifat';
+      case WorkRequirement.sequence:
+        return 'Ketma-ketlik';
+      case WorkRequirement.stepSequence:
+        return 'Qadam ichidagi ketma-ketlik';
+      case WorkRequirement.qcos:
+        return 'QCOS';
+      case WorkRequirement.none:
+        return 'Hech narsa';
+    }
+  }
+
+  String _verificationLabel(VerificationMethod value) {
+    switch (value) {
+      case VerificationMethod.visual:
+        return 'Ko‘rish';
+      case VerificationMethod.auditory:
+        return 'Eshitish';
+      case VerificationMethod.touch:
+        return 'Teginish';
+      case VerificationMethod.measurement:
+        return 'O‘lchash';
+    }
+  }
+}
+
+class _ElementDraft {
+  const _ElementDraft({
+    required this.name,
+    required this.type,
+    required this.requirements,
+    required this.verificationMethods,
+    required this.basis,
+  });
+
+  final String name;
+  final WorkElementType type;
+  final List<WorkRequirement> requirements;
+  final List<VerificationMethod> verificationMethods;
+  final String basis;
 }
 
 class _Metric extends StatelessWidget {
@@ -554,3 +838,11 @@ class _Metric extends StatelessWidget {
     );
   }
 }
+
+// This sentinel is used only to make the "none" choice explicit in the UI.
+// It is never stored in a WorkElement.
+extension WorkRequirementNone on WorkRequirement {
+  static const WorkRequirement none = _WorkRequirementNone.value;
+}
+
+enum _WorkRequirementNone { value }
