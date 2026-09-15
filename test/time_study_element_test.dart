@@ -1,5 +1,4 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:line_balance_platform/features/time_study/data/time_study_storage.dart';
 import 'package:line_balance_platform/features/time_study/domain/time_study_models.dart';
 
 void main() {
@@ -72,11 +71,8 @@ void main() {
     expect(updated.basis, 'QCOS 2344433:2025');
   });
 
-}
 
-
-
-test('time study session data round-trips through JSON', () {
+  test('time study session data round-trips through JSON', () {
   final data = TimeStudySessionData(
     sessionName: 'ST-03 yig‘ish jarayoni',
     workType: WorkType.cyclic,
@@ -115,3 +111,4 @@ test('time study session data round-trips through JSON', () {
   expect(restored.cycles.single.duration, const Duration(seconds: 10));
   expect(restored.cycles.single.elements.single.duration, const Duration(seconds: 4));
 });
+}

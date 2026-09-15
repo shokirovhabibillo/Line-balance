@@ -58,7 +58,6 @@ void main() {
 
     expect(find.text('Cycle yozuvlari (1)'), findsOneWidget);
   });
-}
 
   testWidgets('work element dialog shows requirement and verification options',
       (tester) async {
@@ -86,3 +85,4 @@ void main() {
     expect(find.text('O‘lchash'), findsOneWidget);
     expect(find.text('Asos / standart / hujjat'), findsOneWidget);
   });
+}

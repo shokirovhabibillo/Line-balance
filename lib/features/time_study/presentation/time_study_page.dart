@@ -729,8 +729,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                 ),
               ),
             ),
-          ),
-          if (_loadingSession)
+        ],
+      ),
+      if (_loadingSession)
             const Positioned.fill(
               child: ColoredBox(
                 color: Color(0x99FFFFFF),
@@ -839,10 +840,3 @@ class _Metric extends StatelessWidget {
   }
 }
 
-// This sentinel is used only to make the "none" choice explicit in the UI.
-// It is never stored in a WorkElement.
-extension WorkRequirementNone on WorkRequirement {
-  static const WorkRequirement none = _WorkRequirementNone.value;
-}
-
-enum _WorkRequirementNone { value }
