@@ -1,45 +1,18 @@
-# Line Balance Platform — V0.4.1
+# Architecture
 
-## Current milestone: Cycle Recording foundation
+## Time Study V0.5.1
 
-### Implemented
-- Home dashboard
-- Time Study navigation
-- Cyclic / non-cyclic selection
-- Session name field
-- Live cycle stopwatch
-- Start / Finish / Reset controls
-- Cycle records with sequence number and timestamp
-- Cycle summary: count, average, minimum, maximum and range
-- Cycle deletion and sequence re-numbering
-- Work element list
-- Separate domain model and calculation service
-- Unit and widget tests
+Cycle time and element time are separate observations.
 
-### Deferred deliberately
-- Persistent database
-- Per-element timing/laps
-- Productive/non-productive selection UI per element
-- Rating
-- Allowance
-- Normal Time / Standard Time
-- SOS/JES and STS/TIS
-- Downtime
-- Line Balance
-- VSM
-- HPV / Value Add
-- Excel import/export
-- PPTX reporting
-- Authentication and full security layer
+`CycleRecord.duration`
+= elapsed time from Start cycle to Finish cycle.
 
-### Error-proofing in this milestone
-- Finish is disabled until Start
-- Start is disabled while a cycle is running
-- Reset is only available during an active cycle
-- Zero-duration cycle is not persisted
-- Cycle numbering is rebuilt after deletion
-- Calculation logic is isolated and unit-tested
-- Widget tests explicitly verify that Time StudyPage opens before recording a cycle
+`ElementRecord.duration`
+= elapsed time from Start element to Finish element.
 
-## Next milestone
-Per-element timing inside each cycle, with validation and a clear productive/non-productive classification workflow.
+The element records are stored inside the corresponding cycle.
+
+This prevents element timing from changing or resetting the cycle stopwatch.
+
+Future layers:
+Observed Time → Rating → Normal Time → Allowance → Standard Time.

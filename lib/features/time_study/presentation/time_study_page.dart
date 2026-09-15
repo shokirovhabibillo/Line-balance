@@ -20,15 +20,17 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
   final _currentElementRecords = <ElementRecord>[];
 
   WorkType _workType = WorkType.cyclic;
-  Timer? _timer;
-  final _stopwatch = Stopwatch();
+  Timer? _refreshTimer;
+  final _cycleStopwatch = Stopwatch();
+  final _elementStopwatch = Stopwatch();
+
   bool _runningCycle = false;
   bool _runningElement = false;
   int _elementIndex = 0;
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _refreshTimer?.cancel();
     _nameController.dispose();
     super.dispose();
   }
@@ -38,29 +40,37 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
 
     _currentElementRecords.clear();
     _elementIndex = 0;
-    _stopwatch
+
+    _cycleStopwatch
       ..reset()
       ..start();
+
     _runningCycle = true;
     _startRefresh();
     setState(() {});
   }
 
   void _startRefresh() {
-    _timer?.cancel();
-    _timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
-      if (mounted) setState(() {});
-    });
+    _refreshTimer?.cancel();
+    _refreshTimer = Timer.periodic(
+      const Duration(milliseconds: 100),
+      (_) {
+        if (mounted) setState(() {});
+      },
+    );
   }
 
   void _startElement() {
-    if (!_runningCycle || _runningElement || _elementIndex >= _elements.length) {
+    if (!_runningCycle ||
+        _runningElement ||
+        _elementIndex >= _elements.length) {
       return;
     }
 
-    _stopwatch
+    _elementStopwatch
       ..reset()
       ..start();
+
     _runningElement = true;
     setState(() {});
   }
@@ -68,8 +78,8 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
   void _finishElement() {
     if (!_runningElement) return;
 
-    _stopwatch.stop();
-    final duration = _stopwatch.elapsed;
+    _elementStopwatch.stop();
+    final duration = _elementStopwatch.elapsed;
     final element = _elements[_elementIndex];
 
     if (duration > Duration.zero) {
@@ -84,24 +94,23 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
 
     _runningElement = false;
     _elementIndex++;
-    _stopwatch.reset();
+    _elementStopwatch.reset();
     setState(() {});
   }
 
+  bool get _allElementsMeasured {
+    return _elements.isEmpty || _elementIndex >= _elements.length;
+  }
+
   void _finishCycle() {
-    if (!_runningCycle || _runningElement) return;
+    if (!_runningCycle || _runningElement || !_allElementsMeasured) {
+      return;
+    }
 
-    _timer?.cancel();
-    _stopwatch.stop();
+    _cycleStopwatch.stop();
+    _refreshTimer?.cancel();
 
-    final elementTotal = _currentElementRecords.fold<Duration>(
-      Duration.zero,
-      (total, record) => total + record.duration,
-    );
-
-    final duration = elementTotal > Duration.zero
-        ? elementTotal
-        : _stopwatch.elapsed;
+    final duration = _cycleStopwatch.elapsed;
 
     if (duration > Duration.zero) {
       _cycles.add(
@@ -115,18 +124,22 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
     }
 
     _runningCycle = false;
-    _runningElement = false;
     _elementIndex = 0;
     _currentElementRecords.clear();
-    _stopwatch.reset();
+    _cycleStopwatch.reset();
+    _elementStopwatch.reset();
     setState(() {});
   }
 
   void _resetCycle() {
-    _timer?.cancel();
-    _stopwatch
+    _refreshTimer?.cancel();
+    _cycleStopwatch
       ..stop()
       ..reset();
+    _elementStopwatch
+      ..stop()
+      ..reset();
+
     _runningCycle = false;
     _runningElement = false;
     _elementIndex = 0;
@@ -159,7 +172,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           FilledButton(
             onPressed: () {
               final name = controller.text.trim();
-              if (name.isNotEmpty) Navigator.pop(context, name);
+              if (name.isNotEmpty) {
+                Navigator.pop(context, name);
+              }
             },
             child: Text(action),
           ),
@@ -210,6 +225,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
 
   void _toggleElementType(int index) {
     if (_runningCycle) return;
+
     final element = _elements[index];
     setState(() {
       _elements[index] = element.copyWith(
@@ -237,7 +253,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
   @override
   Widget build(BuildContext context) {
     final summary = _calculator.summarize(_cycles);
-    final elementSummaries = _calculator.summarizeElements(_cycles, _elements);
+    final elementSummaries =
+        _calculator.summarizeElements(_cycles, _elements);
+
     String fmt(Duration? d) => d == null ? '—' : _format(d);
 
     return Scaffold(
@@ -253,7 +271,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           ),
           const SizedBox(height: 8),
           const Text(
-            'Cycle vaqtini va cycle ichidagi ish elementlarini ketma-ket o‘lchash.',
+            'Cycle va cycle ichidagi ish elementlarini mustaqil timerlar bilan o‘lchash.',
           ),
           const SizedBox(height: 20),
           TextField(
@@ -288,7 +306,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
               child: Column(
                 children: [
                   Text(
-                    _format(_stopwatch.elapsed),
+                    _format(_runningElement
+                        ? _elementStopwatch.elapsed
+                        : _cycleStopwatch.elapsed),
                     key: const Key('time_study_timer'),
                     style: Theme.of(context).textTheme.displaySmall?.copyWith(
                           fontWeight: FontWeight.w700,
@@ -301,7 +321,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                         : _runningCycle
                             ? (_elements.isEmpty
                                 ? 'Cycle davom etmoqda'
-                                : 'Keyingi elementni boshlang')
+                                : _allElementsMeasured
+                                    ? 'Barcha elementlar o‘lchandi'
+                                    : 'Keyingi elementni boshlang')
                             : 'Yangi cycle boshlashga tayyor',
                     key: const Key('time_study_status'),
                   ),
@@ -335,7 +357,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                         label: const Text('Finish element'),
                       ),
                       FilledButton.icon(
-                        onPressed: _runningCycle && !_runningElement
+                        onPressed: _runningCycle &&
+                                !_runningElement &&
+                                _allElementsMeasured
                             ? _finishCycle
                             : null,
                         icon: const Icon(Icons.stop_circle_outlined),
@@ -351,7 +375,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                   if (_elements.isNotEmpty && _runningCycle) ...[
                     const SizedBox(height: 14),
                     Text(
-                      _elementIndex >= _elements.length
+                      _allElementsMeasured
                           ? 'Barcha elementlar o‘lchandi. Finish cycle bosing.'
                           : 'Navbatdagi element: ${_elements[_elementIndex].name}',
                       textAlign: TextAlign.center,
@@ -476,11 +500,15 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                 child: ExpansionTile(
                   leading: CircleAvatar(child: Text('${cycle.number}')),
                   title: Text(_format(cycle.duration)),
-                  subtitle: Text('${cycle.elements.length} ta element o‘lchangan'),
+                  subtitle: Text(
+                    '${cycle.elements.length} ta element o‘lchangan',
+                  ),
                   children: [
                     if (cycle.elements.isEmpty)
                       const ListTile(
-                        title: Text('Bu cycle uchun element o‘lchovlari yo‘q.'),
+                        title: Text(
+                          'Bu cycle uchun element o‘lchovlari yo‘q.',
+                        ),
                       )
                     else
                       ...cycle.elements.map(
@@ -507,20 +535,22 @@ class _Metric extends StatelessWidget {
   final String value;
 
   @override
-  Widget build(BuildContext context) => SizedBox(
-        width: 100,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label, style: Theme.of(context).textTheme.labelMedium),
-            const SizedBox(height: 4),
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-            ),
-          ],
-        ),
-      );
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 100,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.labelMedium),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                ),
+          ),
+        ],
+      ),
+    );
+  }
 }

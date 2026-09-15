@@ -16,11 +16,25 @@ void main() {
 
   test('summary calculates average min max range', () {
     final cycles = [
-      CycleRecord(number: 1, duration: const Duration(seconds: 40), recordedAt: DateTime(2026)),
-      CycleRecord(number: 2, duration: const Duration(seconds: 50), recordedAt: DateTime(2026)),
-      CycleRecord(number: 3, duration: const Duration(seconds: 45), recordedAt: DateTime(2026)),
+      CycleRecord(
+        number: 1,
+        duration: const Duration(seconds: 40),
+        recordedAt: DateTime(2026),
+      ),
+      CycleRecord(
+        number: 2,
+        duration: const Duration(seconds: 50),
+        recordedAt: DateTime(2026),
+      ),
+      CycleRecord(
+        number: 3,
+        duration: const Duration(seconds: 45),
+        recordedAt: DateTime(2026),
+      ),
     ];
+
     final s = calculator.summarize(cycles);
+
     expect(s.count, 3);
     expect(s.average, const Duration(seconds: 45));
     expect(s.minimum, const Duration(seconds: 40));
@@ -62,7 +76,11 @@ void main() {
       ),
     ];
 
-    final result = calculator.summarizeElements(cycles, const [element]).single;
+    final result = calculator.summarizeElements(
+      cycles,
+      const [element],
+    ).single;
+
     expect(result.count, 2);
     expect(result.average, const Duration(seconds: 5));
     expect(result.minimum, const Duration(seconds: 4));

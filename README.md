@@ -1,9 +1,13 @@
 # Line Balance Platform
 
-## V0.5 — Time Study Element Timing
+## V0.5.1 — Independent Cycle and Element Timing
 
-Adds work-element definitions, productive/non-productive classification,
-element timing inside cycles, element statistics, and cycle detail.
+Time Study now keeps the cycle stopwatch independent from the element stopwatch.
 
-Rating, allowance, normal time and standard time are deliberately deferred
-until the observed-time layer is stable.
+Flow:
+Start cycle → Start element → Finish element → next element → Finish cycle.
+
+The cycle duration is always the actual elapsed cycle time.
+Element durations are stored separately as observed element times.
+
+Rating, allowance, normal time and standard time remain intentionally deferred.

@@ -6,12 +6,36 @@ class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   static const _modules = <_Module>[
-    _Module('Time Study', 'Xronometraj va ish vaqtini o‘lchash', Icons.timer_outlined),
-    _Module('Line Balance', 'Takt, cycle, workload va bottleneck', Icons.account_tree_outlined),
-    _Module('VSM', 'Value Stream va jarayon xaritasi', Icons.route_outlined),
-    _Module('Downtime', 'To‘xtalishlarni qayd etish va tahlil', Icons.pause_circle_outline),
-    _Module('Learn', 'Instrumentlar bo‘yicha trening', Icons.school_outlined),
-    _Module('Reports', 'KPI, Excel va PPTX hisobotlari', Icons.assessment_outlined),
+    _Module(
+      'Time Study',
+      'Xronometraj va ish vaqtini o‘lchash',
+      Icons.timer_outlined,
+    ),
+    _Module(
+      'Line Balance',
+      'Takt, cycle, workload va bottleneck',
+      Icons.account_tree_outlined,
+    ),
+    _Module(
+      'VSM',
+      'Value Stream va jarayon xaritasi',
+      Icons.route_outlined,
+    ),
+    _Module(
+      'Downtime',
+      'To‘xtalishlarni qayd etish va tahlil',
+      Icons.pause_circle_outline,
+    ),
+    _Module(
+      'Learn',
+      'Instrumentlar bo‘yicha trening',
+      Icons.school_outlined,
+    ),
+    _Module(
+      'Reports',
+      'KPI, Excel va PPTX hisobotlari',
+      Icons.assessment_outlined,
+    ),
   ];
 
   @override
@@ -41,7 +65,10 @@ class HomePage extends StatelessWidget {
                       children: [
                         Text(
                           'WORK • LEARN • ANALYZE • IMPROVE',
-                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(
                                 color: Theme.of(context).colorScheme.primary,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -49,9 +76,10 @@ class HomePage extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(
                           'Industrial Engineering platform',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                                fontWeight: FontWeight.w700,
-                              ),
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineSmall
+                              ?.copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 8),
                         const Text(
@@ -108,7 +136,9 @@ class _ModuleCard extends StatelessWidget {
           }
 
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${module.title}: keyingi bosqichda ochiladi')),
+            SnackBar(
+              content: Text('${module.title}: keyingi bosqichda ochiladi'),
+            ),
           );
         },
         child: Padding(
@@ -122,7 +152,10 @@ class _ModuleCard extends StatelessWidget {
                   color: colors.primaryContainer,
                   borderRadius: BorderRadius.circular(14),
                 ),
-                child: Icon(module.icon, color: colors.onPrimaryContainer),
+                child: Icon(
+                  module.icon,
+                  color: colors.onPrimaryContainer,
+                ),
               ),
               const SizedBox(width: 14),
               Expanded(
@@ -137,7 +170,11 @@ class _ModuleCard extends StatelessWidget {
                           ),
                     ),
                     const SizedBox(height: 5),
-                    Text(module.subtitle, maxLines: 2, overflow: TextOverflow.ellipsis),
+                    Text(
+                      module.subtitle,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ],
                 ),
               ),

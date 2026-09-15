@@ -81,7 +81,8 @@ class TimeStudyCalculator {
         );
       }
 
-      final values = records.map((e) => e.duration.inMicroseconds).toList()..sort();
+      final values = records.map((e) => e.duration.inMicroseconds).toList()
+        ..sort();
       final total = values.fold<int>(0, (a, b) => a + b);
 
       return ElementSummary(
