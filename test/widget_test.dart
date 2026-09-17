@@ -7,7 +7,12 @@ void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
-    await tester.pumpAndSettle();
+
+    // TimeStudyPage has an indeterminate loading spinner while the saved
+    // session is loaded. pumpAndSettle() waits for that spinner forever.
+    // Advance the test clock instead, then verify that the page is present.
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pump();
 
     expect(find.byType(TimeStudyPage), findsOneWidget);
   }

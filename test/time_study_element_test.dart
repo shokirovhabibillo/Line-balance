@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:line_balance_platform/features/time_study/domain/time_study_models.dart';
-import 'package:line_balance_platform/features/time_study/data/time_study_storage.dart';
 
 void main() {
   test('cycle keeps independent cycle and element observations', () {
