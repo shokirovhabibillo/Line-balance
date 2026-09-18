@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:line_balance_platform/app/app.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_study_page.dart';
 
 void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
+    // TimeStudyPage loads its saved session through SharedPreferences.
+    // Widget tests do not have the real platform preferences plugin, so
+    // provide the in-memory test implementation before the page is created.
+    SharedPreferences.setMockInitialValues({});
+
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
 
