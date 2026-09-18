@@ -7,6 +7,8 @@ void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
+    // Process the navigation tap before checking the loading state.
+    await tester.pump();
 
     // TimeStudyPage shows an indeterminate spinner while the saved session
     // is loaded. pumpAndSettle() must not be used here because that spinner
