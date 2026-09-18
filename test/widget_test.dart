@@ -8,13 +8,18 @@ void main() {
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
 
-    // TimeStudyPage has an indeterminate loading spinner while the saved
-    // session is loaded. pumpAndSettle() waits for that spinner forever.
-    // Advance the test clock instead, then verify that the page is present.
-    await tester.pump(const Duration(milliseconds: 250));
-    await tester.pump();
+    // TimeStudyPage shows an indeterminate spinner while the saved session
+    // is loaded. pumpAndSettle() must not be used here because that spinner
+    // never settles by itself. Wait for the real loading overlay to disappear.
+    for (var i = 0; i < 40; i++) {
+      if (find.byType(CircularProgressIndicator).evaluate().isEmpty) {
+        break;
+      }
+      await tester.pump(const Duration(milliseconds: 50));
+    }
 
     expect(find.byType(TimeStudyPage), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   }
 
   Future<void> scrollToCycleRecords(WidgetTester tester) async {
