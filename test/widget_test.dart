@@ -7,9 +7,9 @@ import 'package:line_balance_platform/features/time_study/presentation/time_chec
 
 void main() {
   Future<void> prepareViewport(WidgetTester tester) async {
-    tester.view.physicalSize = const Size(1200, 900);
-    tester.view.devicePixelRatio = 1.0;
-    addTearDown(tester.view.reset);
+    // Keep Flutter's default test viewport (800x600). The production layout
+    // is responsive and the widget tests should exercise the same logical
+    // viewport used by the test binding.
   }
 
   Future<void> openTimeStudy(WidgetTester tester) async {
