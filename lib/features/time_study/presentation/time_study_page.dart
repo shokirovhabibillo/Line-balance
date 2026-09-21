@@ -228,12 +228,12 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setState) => AlertDialog(
-          title: Text(initial == null ? 'Ish elementi qo‘shish' : 'Ish elementini tahrirlash'),
+          title: Text(key: const Key('work_element_dialog_title'), initial == null ? 'Ish elementi qo‘shish' : 'Ish elementini tahrirlash'),
           content: SizedBox(
             width: 520,
             child: SingleChildScrollView(
               child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.start, children: [
-                TextField(controller: name, autofocus: initial == null, decoration: const InputDecoration(labelText: 'Element nomi', border: OutlineInputBorder())),
+                TextField(key: const Key('work_element_name'), controller: name, autofocus: initial == null, decoration: const InputDecoration(labelText: 'Element nomi', border: OutlineInputBorder())),
                 const SizedBox(height: 12),
                 SegmentedButton<WorkElementType>(
                   segments: const [
@@ -288,7 +288,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           ),
           actions: [
             TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('Bekor qilish')),
-            FilledButton(onPressed: () {
+            FilledButton(key: const Key('work_element_dialog_save'), onPressed: () {
               if (name.text.trim().isEmpty) return;
               Navigator.pop(dialogContext, _ElementDraft(
                 name: name.text.trim(), type: type, requirements: requirements.toList(), property: property.text.trim(),
@@ -337,11 +337,12 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
         actions: [
           IconButton(tooltip: 'History', icon: const Icon(Icons.history), onPressed: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => const TimeStudyHistoryPage()))),
           PopupMenuButton<String>(
+            key: const Key('time_study_menu'),
             onSelected: (v) { if (v == 'import') _importExcel(); if (v == 'export') _exportExcel(); if (v == 'template') _exportExcel(template: true); },
             itemBuilder: (_) => const [
-              PopupMenuItem(value: 'import', child: Text('Excel import')),
-              PopupMenuItem(value: 'export', child: Text('Excel export')),
-              PopupMenuItem(value: 'template', child: Text('Excel namuna')), 
+              PopupMenuItem(value: 'import', key: const Key('excel_import_item'), child: Text('Excel import')),
+              PopupMenuItem(value: 'export', key: const Key('excel_export_item'), child: Text('Excel export')),
+              PopupMenuItem(value: 'template', key: const Key('excel_template_item'), child: Text('Excel namuna')), 
             ],
           ),
         ],
@@ -362,7 +363,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
           const SizedBox(height: 14),
           SegmentedButton<WorkType>(segments: const [ButtonSegment(value: WorkType.cyclic, label: Text('Siklik'), icon: Icon(Icons.repeat)), ButtonSegment(value: WorkType.nonCyclic, label: Text('Nosiklik'), icon: Icon(Icons.shuffle))], selected: {_workType}, onSelectionChanged: (v) { setState(() => _workType = v.first); _queueSave(); }),
           const SizedBox(height: 20),
-          Row(children: [Expanded(child: Text('Ish elementlari (${_elements.length})', key: const Key('work_elements_header'), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700))), FilledButton.tonalIcon(onPressed: _addElement, icon: const Icon(Icons.add), label: const Text('Qo‘shish'))]),
+          Row(children: [Expanded(child: Text('Ish elementlari (${_elements.length})', key: const Key('work_elements_header'), style: Theme.of(context).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w700))), FilledButton.tonalIcon(key: const Key('add_work_element'), onPressed: _addElement, icon: const Icon(Icons.add), label: const Text('Qo‘shish'))]),
           const SizedBox(height: 8),
           if (_elements.isEmpty) const Card(child: Padding(padding: EdgeInsets.all(18), child: Text('Xronometraj qilinadigan ishlarni ketma-ket qo‘shing. Har bir element uchun Xususiyati va o‘lchash usulini belgilang.'))),
           ..._elements.asMap().entries.map((entry) {
@@ -375,7 +376,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             ));
           }),
           const SizedBox(height: 20),
-          FilledButton.icon(onPressed: _elements.isEmpty ? null : _openTimeCheck, icon: const Icon(Icons.timer_outlined), label: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('TIME CHECK — o‘lchashni boshlash'))),
+          FilledButton.icon(onPressed: _elements.isEmpty ? null : _openTimeCheck, icon: const Icon(Icons.timer_outlined), label: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('TIME CHECK — o‘lchashni boshlash', key: const Key('time_check_button')))),
           const SizedBox(height: 20),
           Card(child: Padding(padding: const EdgeInsets.all(18), child: Wrap(spacing: 18, runSpacing: 14, children: [
             _Metric('Kuzatuv', '${summary.observedCount}'), _Metric('Valid', '${summary.validCount}'), _Metric('Excluded', '${summary.excludedCount}'), _Metric('Average', _fmt(summary.average)), _Metric('Median', _fmt(summary.median)), _Metric('Mode', _fmt(summary.mode)), _Metric('Min', _fmt(summary.minimum)), _Metric('Max', _fmt(summary.maximum)), _Metric('Range', _fmt(summary.range)),
