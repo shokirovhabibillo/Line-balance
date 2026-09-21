@@ -1,43 +1,30 @@
-# Line Balance Platform
+# Line Balance Platform — V0.6.0 Time Study V2
 
-## V0.5.4 — Time Study local persistence — Work element requirements and ordering
+V0.6 is the Time Study V2 foundation built on the V0.5.4 FIXED8 baseline.
 
-Time Study keeps independent cycle and element timers.
+## Main changes
+- Time Study setup is separated from the dedicated Time Check instrument screen.
+- Work Element now supports Requirement, Xususiyati, Verification Method, Basis and Measurement Mode.
+- Measurement modes:
+  - Start + Finish Element
+  - Cycle-linked / Finish-only
+- Time Check shows measured, current and upcoming elements.
+- Cycle and element timing remain independent.
+- Cycle records can be deleted with confirmation.
+- Statistics: observed, valid, excluded, average, median, mode, min, max, range and standard deviation.
+- Selected time is a manual engineering choice and is not automatically replaced by the average.
+- Excel export/import and Excel template are available from the Time Study menu.
+- Basic Time Study history is retained for recent completed measurements.
+- Existing V0.5.4 saved sessions remain readable through the legacy storage key.
 
-### Local persistence
+## Excel structure
+Exported workbooks contain:
+- Session
+- Work Elements
+- Observations
+- Summary
 
-The current Time Study session is automatically saved on the device. The following survive leaving the Time Study page and opening it again:
-- session name;
-- cyclic/non-cyclic selection;
-- work elements and their order;
-- element requirements, verification methods and basis;
-- completed cycle records and element measurements.
+Import expects the Session and Work Elements sheets and can restore observations from the Observations sheet when present.
 
-An active unfinished stopwatch is intentionally not resumed after the page is closed, because its elapsed time cannot be reconstructed reliably after the UI lifecycle ends.
-
-### Work elements
-
-The Ish elementlari section now supports:
-
-1. Changing the order number of an added work element with Up/Down controls.
-2. Selecting required compliance categories:
-   - Xavfsizlik
-   - Sifat
-   - Ketma-ketlik
-   - Qadam ichidagi ketma-ketlik
-   - QCOS
-   - Hech narsa
-3. Selecting verification method(s):
-   - Ko‘rish
-   - Eshitish
-   - Teginish
-   - O‘lchash
-4. Entering the basis/reference for the requirement or verification, for
-   example `CVIS 009-2025`, `Std-275537:2025`, or `QCOS 2344433:2025`.
-5. Editing all of the above after the element is created.
-
-Reordering, editing and deleting are disabled while a cycle is running to
-protect the integrity of an active time study.
-
-Rating, allowance, normal time and standard time remain intentionally
- deferred.
+## Validation
+The project CI remains pinned to Flutter 3.44.4. The container used to assemble this ZIP does not have Flutter/Dart installed, so local `flutter analyze`, `flutter test`, and APK build were not run here. CI must perform the authoritative validation.
