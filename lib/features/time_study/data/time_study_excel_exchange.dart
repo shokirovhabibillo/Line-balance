@@ -74,24 +74,25 @@ class TimeStudyExcelExchange {
 
     final bytes = workbook.encode();
     if (bytes == null) return false;
-    final output = await FilePicker.platform.saveFile(
+    final output = await FilePicker.saveFile(
       dialogTitle: 'Time Study Excel faylini saqlash',
       fileName: 'time_study_${DateTime.now().millisecondsSinceEpoch}.xlsx',
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
+      mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
       bytes: Uint8List.fromList(bytes),
     );
     return output != null;
   }
 
   Future<TimeStudySessionData?> importSession() async {
-    final result = await FilePicker.platform.pickFiles(
+    final files = await FilePicker.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['xlsx'],
     );
-    if (result == null || result.files.isEmpty) return null;
-    final bytes = result.files.single.bytes ?? await result.files.single.readAsBytes();
-    if (bytes == null || bytes.isEmpty) return null;
+    if (files.isEmpty) return null;
+    final bytes = await files.single.readAsBytes();
+    if (bytes.isEmpty) return null;
 
     final workbook = Excel.decodeBytes(bytes);
     final sessionSheet = workbook.tables['Session'];
@@ -120,8 +121,8 @@ class TimeStudyExcelExchange {
         (v) => v.name == (row.length > 4 ? row[4]?.value?.toString() : ''),
         orElse: () => MeasurementMode.startFinish,
       );
-      final requirements = _enumList<WorkRequirement>(row.length > 5 ? row[5]?.value?.toString() : '', WorkRequirement.values);
-      final verification = _enumList<VerificationMethod>(row.length > 7 ? row[7]?.value?.toString() : '', VerificationMethod.values);
+      final requirements = _enumList<WorkRequirement>(row.length > 5 ? row[5]?.value?.toString() ?? '' : '', WorkRequirement.values);
+      final verification = _enumList<VerificationMethod>(row.length > 7 ? row[7]?.value?.toString() ?? '' : '', VerificationMethod.values);
       elements.add(WorkElement(
         id: id,
         name: name,
