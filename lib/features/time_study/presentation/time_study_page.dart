@@ -244,17 +244,27 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
                 ),
                 const SizedBox(height: 14),
                 const Text('O‘lchash usuli', style: TextStyle(fontWeight: FontWeight.w700)),
-                RadioListTile<MeasurementMode>(
-                  value: MeasurementMode.startFinish, groupValue: mode, contentPadding: EdgeInsets.zero,
-                  title: const Text('Start + Finish Element'),
-                  subtitle: const Text('Element alohida boshlanadi va tugatiladi.'),
-                  onChanged: (v) => setState(() => mode = v!),
-                ),
-                RadioListTile<MeasurementMode>(
-                  value: MeasurementMode.cycleLinkedFinishOnly, groupValue: mode, contentPadding: EdgeInsets.zero,
-                  title: const Text('Cycle-linked / Finish-only'),
-                  subtitle: const Text('Cycle uzluksiz ishlaydi; navbatdagi element Finish Element bilan kesib olinadi.'),
-                  onChanged: (v) => setState(() => mode = v!),
+                RadioGroup<MeasurementMode>(
+                  groupValue: mode,
+                  onChanged: (v) {
+                    if (v != null) setState(() => mode = v);
+                  },
+                  child: Column(
+                    children: [
+                      RadioListTile<MeasurementMode>(
+                        value: MeasurementMode.startFinish,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Start + Finish Element'),
+                        subtitle: const Text('Element alohida boshlanadi va tugatiladi.'),
+                      ),
+                      RadioListTile<MeasurementMode>(
+                        value: MeasurementMode.cycleLinkedFinishOnly,
+                        contentPadding: EdgeInsets.zero,
+                        title: const Text('Cycle-linked / Finish-only'),
+                        subtitle: const Text('Cycle uzluksiz ishlaydi; navbatdagi element Finish Element bilan kesib olinadi.'),
+                      ),
+                    ],
+                  ),
                 ),
                 const SizedBox(height: 8),
                 const Text('Amal qilinishi kerak bo‘lgan talablar', style: TextStyle(fontWeight: FontWeight.w700)),
