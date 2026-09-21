@@ -6,7 +6,14 @@ import 'package:line_balance_platform/features/time_study/presentation/time_stud
 import 'package:line_balance_platform/features/time_study/presentation/time_check_page.dart';
 
 void main() {
+  Future<void> prepareViewport(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1200, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(tester.view.reset);
+  }
+
   Future<void> openTimeStudy(WidgetTester tester) async {
+    await prepareViewport(tester);
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
