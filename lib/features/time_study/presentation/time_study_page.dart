@@ -379,7 +379,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             return Card(child: ExpansionTile(
               leading: CircleAvatar(child: Text('${c.number}')), title: Text(_fmt(c.duration)), subtitle: Text('${c.elements.length} ta element • ${c.excluded ? 'Excluded' : 'Valid'}'),
               trailing: IconButton(icon: const Icon(Icons.delete_outline), tooltip: 'Cycle o‘chirish', onPressed: () => _deleteCycle(index)),
-              children: c.elements.map((r) => ListTile(dense: true, title: Text(_elementName(r.elementId)), subtitle: r.excluded ? Text('Excluded: ${r.exclusionReason}') : null, trailing: Text(_fmt(r.duration))).toList()),
+              children: c.elements.map((r) => ListTile(dense: true, title: Text(_elementName(r.elementId)), subtitle: r.excluded ? Text('Excluded: ${r.exclusionReason}') : null, trailing: Text(_fmt(r.duration)))).toList(),
             ));
           }),
           const SizedBox(height: 80),
