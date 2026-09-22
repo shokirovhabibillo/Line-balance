@@ -340,9 +340,9 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             key: const Key('time_study_menu'),
             onSelected: (v) { if (v == 'import') _importExcel(); if (v == 'export') _exportExcel(); if (v == 'template') _exportExcel(template: true); },
             itemBuilder: (_) => const [
-              PopupMenuItem(value: 'import', key: const Key('excel_import_item'), child: Text('Excel import')),
-              PopupMenuItem(value: 'export', key: const Key('excel_export_item'), child: Text('Excel export')),
-              PopupMenuItem(value: 'template', key: const Key('excel_template_item'), child: Text('Excel namuna')), 
+              PopupMenuItem(value: 'import', key: Key('excel_import_item'), child: Text('Excel import')),
+              PopupMenuItem(value: 'export', key: Key('excel_export_item'), child: Text('Excel export')),
+              PopupMenuItem(value: 'template', key: Key('excel_template_item'), child: Text('Excel namuna')), 
             ],
           ),
         ],
@@ -376,7 +376,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             ));
           }),
           const SizedBox(height: 20),
-          FilledButton.icon(onPressed: _elements.isEmpty ? null : _openTimeCheck, icon: const Icon(Icons.timer_outlined), label: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('TIME CHECK — o‘lchashni boshlash', key: const Key('time_check_button')))),
+          FilledButton.icon(onPressed: _elements.isEmpty ? null : _openTimeCheck, icon: const Icon(Icons.timer_outlined), label: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('TIME CHECK — o‘lchashni boshlash', key: Key('time_check_button')))),
           const SizedBox(height: 20),
           Card(child: Padding(padding: const EdgeInsets.all(18), child: Wrap(spacing: 18, runSpacing: 14, children: [
             _Metric('Kuzatuv', '${summary.observedCount}'), _Metric('Valid', '${summary.validCount}'), _Metric('Excluded', '${summary.excludedCount}'), _Metric('Average', _fmt(summary.average)), _Metric('Median', _fmt(summary.median)), _Metric('Mode', _fmt(summary.mode)), _Metric('Min', _fmt(summary.minimum)), _Metric('Max', _fmt(summary.maximum)), _Metric('Range', _fmt(summary.range)),

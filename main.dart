@@ -1,8 +1,5 @@
-import 'package:flutter/material.dart';
-
-import 'app/app.dart';
+import 'package:line_balance_platform/app/app.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
   runApp(const LineBalanceApp());
 }
