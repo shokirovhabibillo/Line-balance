@@ -7,6 +7,8 @@ import 'package:line_balance_platform/features/time_study/presentation/time_chec
 
 void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
