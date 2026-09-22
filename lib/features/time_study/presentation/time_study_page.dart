@@ -376,7 +376,7 @@ class _TimeStudyPageState extends State<TimeStudyPage> {
             ));
           }),
           const SizedBox(height: 20),
-          FilledButton.icon(onPressed: _elements.isEmpty ? null : _openTimeCheck, icon: const Icon(Icons.timer_outlined), label: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('TIME CHECK — o‘lchashni boshlash', key: Key('time_check_button')))),
+          FilledButton.icon(key: const Key('time_check_button'), onPressed: _elements.isEmpty ? null : _openTimeCheck, icon: const Icon(Icons.timer_outlined), label: const Padding(padding: EdgeInsets.symmetric(vertical: 12), child: Text('TIME CHECK — o‘lchashni boshlash'))),
           const SizedBox(height: 20),
           Card(child: Padding(padding: const EdgeInsets.all(18), child: Wrap(spacing: 18, runSpacing: 14, children: [
             _Metric('Kuzatuv', '${summary.observedCount}'), _Metric('Valid', '${summary.validCount}'), _Metric('Excluded', '${summary.excludedCount}'), _Metric('Average', _fmt(summary.average)), _Metric('Median', _fmt(summary.median)), _Metric('Mode', _fmt(summary.mode)), _Metric('Min', _fmt(summary.minimum)), _Metric('Max', _fmt(summary.maximum)), _Metric('Range', _fmt(summary.range)),
