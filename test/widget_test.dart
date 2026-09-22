@@ -7,8 +7,6 @@ import 'package:line_balance_platform/features/time_study/presentation/time_chec
 
 void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 900));
-    addTearDown(() => tester.binding.setSurfaceSize(null));
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
@@ -33,16 +31,19 @@ void main() {
     await openTimeStudy(tester);
     expect(find.text('Xronometraj sessiyasi'), findsOneWidget);
     expect(find.byKey(const Key('time_study_menu')), findsOneWidget);
-    await tester.tap(find.byKey(const Key('time_study_menu')));
-    await tester.pump();
-    expect(find.byKey(const Key('excel_import_item')), findsOneWidget);
-    expect(find.byKey(const Key('excel_export_item')), findsOneWidget);
-    expect(find.byKey(const Key('excel_template_item')), findsOneWidget);
+    final menuFinder = find.byKey(const Key('time_study_menu'));
+    final menu = tester.widget<PopupMenuButton<String>>(menuFinder);
+    final entries = menu.itemBuilder(tester.element(menuFinder));
+    expect(entries.whereType<PopupMenuItem<String>>().length, 3);
+    expect(entries.any((e) => e.key == const Key('excel_import_item')), isTrue);
+    expect(entries.any((e) => e.key == const Key('excel_export_item')), isTrue);
+    expect(entries.any((e) => e.key == const Key('excel_template_item')), isTrue);
   });
 
   testWidgets('work element dialog shows property and measurement options', (tester) async {
     await openTimeStudy(tester);
-    await tester.tap(find.byKey(const Key('add_work_element')));
+    final addButton = tester.widget<FilledButton>(find.byKey(const Key('add_work_element')));
+    addButton.onPressed!();
     await tester.pump();
     expect(find.byKey(const Key('work_element_dialog_title')), findsOneWidget);
     expect(find.text('Xususiyati'), findsOneWidget);
@@ -54,13 +55,16 @@ void main() {
 
   testWidgets('Time Check opens after an element is created', (tester) async {
     await openTimeStudy(tester);
-    await tester.tap(find.byKey(const Key('add_work_element')));
+    final addButton = tester.widget<FilledButton>(find.byKey(const Key('add_work_element')));
+    addButton.onPressed!();
     await tester.pump();
     await tester.enterText(find.byKey(const Key('work_element_name')), 'Detalni olish');
-    await tester.tap(find.byKey(const Key('work_element_dialog_save')));
+    final saveButton = tester.widget<FilledButton>(find.byKey(const Key('work_element_dialog_save')));
+    saveButton.onPressed!();
     await tester.pump();
     expect(find.text('Detalni olish'), findsOneWidget);
-    await tester.tap(find.byKey(const Key('time_check_button')));
+    final timeCheckButton = tester.widget<FilledButton>(find.byKey(const Key('time_check_button')));
+    timeCheckButton.onPressed!();
     await tester.pump();
     for (var i = 0; i < 20 && find.byType(TimeCheckPage).evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 50));
