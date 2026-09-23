@@ -63,7 +63,11 @@ void main() {
     saveButton.onPressed!();
     await tester.pump();
     expect(find.text('Detalni olish'), findsOneWidget);
-    final timeCheckButton = tester.widget<FilledButton>(find.byKey(const Key('time_check_button')));
+    final timeCheckFinder = find.byKey(const Key('time_check_button'));
+    await tester.scrollUntilVisible(timeCheckFinder, 500, scrollable: find.byType(Scrollable).first);
+    await tester.pump();
+    expect(timeCheckFinder, findsOneWidget);
+    final timeCheckButton = tester.widget<FilledButton>(timeCheckFinder);
     timeCheckButton.onPressed!();
     await tester.pump();
     for (var i = 0; i < 20 && find.byType(TimeCheckPage).evaluate().isEmpty; i++) {
