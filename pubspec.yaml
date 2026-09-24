@@ -1,7 +1,7 @@
 name: line_balance_platform
 description: Industrial Engineering, Lean, VSM, Work Measurement and Continuous Improvement platform.
 publish_to: "none"
-version: 0.7.0+1
+version: 0.7.0+2
 
 environment:
   sdk: ">=3.12.0 <4.0.0"
