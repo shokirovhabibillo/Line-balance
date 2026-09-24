@@ -1,6 +1,8 @@
 import 'dart:typed_data';
 
 import 'package:excel/excel.dart';
+
+import '../../../core/data/styled_excel.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../application/time_study_calculator.dart';
@@ -15,20 +17,20 @@ class TimeStudyExcelExchange {
     final workbook = Excel.createExcel();
     workbook.rename('Sheet1', 'Session');
     final session = workbook['Session'];
-    _row(session, ['Field', 'Value']);
-    _row(session, ['Session', data.sessionName]);
-    _row(session, ['Work type', data.workType.name]);
-    _row(session, ['Department', data.department]);
-    _row(session, ['Section', data.section]);
-    _row(session, ['Line', data.line]);
-    _row(session, ['Station', data.station]);
-    _row(session, ['Worker', data.worker]);
+    StyledExcel.row(session, ['Field', 'Value'], header: true);
+    StyledExcel.row(session, ['Session', data.sessionName]);
+    StyledExcel.row(session, ['Work type', data.workType.name]);
+    StyledExcel.row(session, ['Department', data.department]);
+    StyledExcel.row(session, ['Section', data.section]);
+    StyledExcel.row(session, ['Line', data.line]);
+    StyledExcel.row(session, ['Station', data.station]);
+    StyledExcel.row(session, ['Worker', data.worker]);
 
     final elements = workbook['Work Elements'];
-    _row(elements, ['ID', 'Sequence', 'Element', 'Type', 'Measurement Mode', 'Requirement', 'Xususiyati', 'Verification', 'Basis', 'Selected Time ms']);
+    StyledExcel.row(elements, ['ID', 'Sequence', 'Element', 'Type', 'Measurement Mode', 'Requirement', 'Xususiyati', 'Verification', 'Basis', 'Selected Time ms'], header: true);
     for (var i = 0; i < data.elements.length; i++) {
       final e = data.elements[i];
-      _row(elements, [
+      StyledExcel.row(elements, [
         e.id,
         i + 1,
         e.name,
@@ -43,21 +45,21 @@ class TimeStudyExcelExchange {
     }
 
     final observations = workbook['Observations'];
-    _row(observations, ['Cycle', 'Cycle Duration ms', 'Element ID', 'Duration ms', 'Recorded at', 'Excluded', 'Exclusion reason']);
+    StyledExcel.row(observations, ['Cycle', 'Cycle Duration ms', 'Element ID', 'Duration ms', 'Recorded at', 'Excluded', 'Exclusion reason'], header: true);
     for (final cycle in data.cycles) {
       if (cycle.elements.isEmpty) {
-        _row(observations, [cycle.number, cycle.duration.inMilliseconds, '', '', cycle.recordedAt.toIso8601String(), cycle.excluded, cycle.exclusionReason]);
+        StyledExcel.row(observations, [cycle.number, cycle.duration.inMilliseconds, '', '', cycle.recordedAt.toIso8601String(), cycle.excluded, cycle.exclusionReason]);
       } else {
         for (final record in cycle.elements) {
-          _row(observations, [cycle.number, cycle.duration.inMilliseconds, record.elementId, record.duration.inMilliseconds, record.recordedAt.toIso8601String(), record.excluded, record.exclusionReason]);
+          StyledExcel.row(observations, [cycle.number, cycle.duration.inMilliseconds, record.elementId, record.duration.inMilliseconds, record.recordedAt.toIso8601String(), record.excluded, record.exclusionReason]);
         }
       }
     }
 
     final summary = workbook['Summary'];
-    _row(summary, ['Element ID', 'Observed', 'Valid', 'Excluded', 'Average ms', 'Median ms', 'Mode ms', 'Min ms', 'Max ms', 'Range ms', 'Std Dev ms']);
+    StyledExcel.row(summary, ['Element ID', 'Observed', 'Valid', 'Excluded', 'Average ms', 'Median ms', 'Mode ms', 'Min ms', 'Max ms', 'Range ms', 'Std Dev ms'], header: true);
     for (final item in summaries) {
-      _row(summary, [
+      StyledExcel.row(summary, [
         item.elementId,
         item.observedCount,
         item.validCount,
@@ -71,6 +73,11 @@ class TimeStudyExcelExchange {
         item.standardDeviationMicros == null ? '' : item.standardDeviationMicros! / 1000,
       ]);
     }
+
+    StyledExcel.layout(session, [24, 40]);
+    StyledExcel.layout(elements, [24, 10, 48, 18, 24, 28, 34, 24, 28, 18]);
+    StyledExcel.layout(observations, [10, 20, 24, 18, 26, 14, 34]);
+    StyledExcel.layout(summary, [24, 14, 14, 14, 18, 18, 18, 16, 16, 16, 18]);
 
     final bytes = workbook.encode();
     if (bytes == null) return false;
@@ -202,10 +209,6 @@ class TimeStudyExcelExchange {
       cycles: [],
     );
     return exportSession(data, const []);
-  }
-
-  void _row(Sheet sheet, List<Object?> values) {
-    sheet.appendRow(values.map<CellValue?>((v) => TextCellValue(v?.toString() ?? '')).toList());
   }
 
   String _ms(Duration? d) => d == null ? '' : (d.inMicroseconds / 1000).toStringAsFixed(3);

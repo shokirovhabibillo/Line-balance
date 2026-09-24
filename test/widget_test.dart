@@ -55,19 +55,17 @@ void main() {
 
   testWidgets('Time Check opens after an element is created', (tester) async {
     await openTimeStudy(tester);
-    final addButton = tester.widget<FilledButton>(find.byKey(const Key('add_work_element')));
-    addButton.onPressed!();
+    await tester.tap(find.byKey(const Key('add_work_element')));
     await tester.pump();
     await tester.enterText(find.byKey(const Key('work_element_name')), 'Detalni olish');
-    final saveButton = tester.widget<FilledButton>(find.byKey(const Key('work_element_dialog_save')));
-    saveButton.onPressed!();
+    await tester.tap(find.byKey(const Key('work_element_dialog_save')));
     await tester.pump();
+    for (var i = 0; i < 20 && tester.widget<FilledButton>(find.byKey(const Key('time_check_button'))).onPressed == null; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     expect(find.text('Detalni olish'), findsOneWidget);
-    final timeCheckFinder = find.byKey(const Key('time_check_button'));
-    await tester.scrollUntilVisible(timeCheckFinder, 500, scrollable: find.byType(Scrollable).first);
-    await tester.pump();
-    expect(timeCheckFinder, findsOneWidget);
-    final timeCheckButton = tester.widget<FilledButton>(timeCheckFinder);
+    final timeCheckButton = tester.widget<FilledButton>(find.byKey(const Key('time_check_button')));
+    expect(timeCheckButton.onPressed, isNotNull);
     timeCheckButton.onPressed!();
     await tester.pump();
     for (var i = 0; i < 20 && find.byType(TimeCheckPage).evaluate().isEmpty; i++) {

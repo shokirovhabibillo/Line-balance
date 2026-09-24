@@ -1,6 +1,11 @@
 import 'package:flutter/material.dart';
 
 import '../../time_study/presentation/time_study_page.dart';
+import '../../catalog/presentation/catalog_page.dart';
+import '../../line_balance/presentation/line_balance_page.dart';
+import '../../vsm/presentation/vsm_page.dart';
+import '../../downtime/presentation/downtime_page.dart';
+import '../../history/presentation/history_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -25,6 +30,16 @@ class HomePage extends StatelessWidget {
       'Downtime',
       'To‘xtalishlarni qayd etish va tahlil',
       Icons.pause_circle_outline,
+    ),
+    _Module(
+      'Catalog',
+      'Product, Model, Process, Operation va Line',
+      Icons.account_tree_outlined,
+    ),
+    _Module(
+      'History',
+      'Barcha o‘lchov va tahlil ishlarining tarixi',
+      Icons.history,
     ),
     _Module(
       'Learn',
@@ -126,20 +141,20 @@ class _ModuleCard extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {
-          if (module.title == 'Time Study') {
-            Navigator.of(context).push(
-              MaterialPageRoute<void>(
-                builder: (_) => const TimeStudyPage(),
-              ),
-            );
+          final pages = <String, Widget>{
+            'Time Study': const TimeStudyPage(),
+            'Catalog': const CatalogPage(),
+            'Line Balance': const LineBalancePage(),
+            'VSM': const VsmPage(),
+            'Downtime': const DowntimePage(),
+            'History': const HistoryPage(),
+          };
+          final page = pages[module.title];
+          if (page != null) {
+            Navigator.of(context).push(MaterialPageRoute<void>(builder: (_) => page));
             return;
           }
-
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('${module.title}: keyingi bosqichda ochiladi'),
-            ),
-          );
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('${module.title}: keyingi bosqichda ochiladi')));
         },
         child: Padding(
           padding: const EdgeInsets.all(16),

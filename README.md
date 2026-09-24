@@ -1,30 +1,22 @@
-# Line Balance Platform — V0.6.0 Time Study V2
+# Line Balance Platform — V0.7.0
 
-V0.6 is the Time Study V2 foundation built on the V0.5.4 FIXED8 baseline.
+Industrial Engineering, Lean, VSM, Work Measurement and Continuous Improvement platform.
 
-## Main changes
-- Time Study setup is separated from the dedicated Time Check instrument screen.
-- Work Element now supports Requirement, Xususiyati, Verification Method, Basis and Measurement Mode.
-- Measurement modes:
-  - Start + Finish Element
-  - Cycle-linked / Finish-only
-- Time Check shows measured, current and upcoming elements.
-- Cycle and element timing remain independent.
-- Cycle records can be deleted with confirmation.
-- Statistics: observed, valid, excluded, average, median, mode, min, max, range and standard deviation.
-- Selected time is a manual engineering choice and is not automatically replaced by the average.
-- Excel export/import and Excel template are available from the Time Study menu.
-- Basic Time Study history is retained for recent completed measurements.
-- Existing V0.5.4 saved sessions remain readable through the legacy storage key.
+## V0.7 scope
+- V0.6 Time Study preserved.
+- Catalog: Product, Model, Process, Operation, Worker/Position, Line/Area.
+- Line Balance: Takt Time, workload, bottleneck, balance %, theoretical stations, manual entry, Excel import/export, history.
+- VSM: Current State / Future State, CT, C/O, Uptime, WIP, Lead Time, VA/NVA, Excel import/export, history.
+- Downtime: category, cause, start/end, duration, productive/NVA, note, Excel import/export, history.
+- Global History: Time Study, Catalog, Line Balance, VSM and Downtime events.
+- Excel presentation standard: borders, bold headers, centered content, wrapped text, controlled column widths and readable row heights.
 
-## Excel structure
-Exported workbooks contain:
-- Session
-- Work Elements
-- Observations
-- Summary
+## Compatibility
+- Flutter stable 3.44.4 in CI.
+- Dart 3.12.x.
+- SDK constraints: Dart >=3.12.0 <4.0.0; Flutter >=3.44.0.
 
-Import expects the Session and Work Elements sheets and can restore observations from the Observations sheet when present.
+## Important
+Cygma CT / Cygma ET / HPV are not assigned formulas in this version. They remain reserved for the analysis layer until the user's company definitions are supplied.
 
-## Validation
-The project CI remains pinned to Flutter 3.44.4. The container used to assemble this ZIP does not have Flutter/Dart installed, so local `flutter analyze`, `flutter test`, and APK build were not run here. CI must perform the authoritative validation.
+No AGP/Gradle/Kotlin upgrade was introduced in V0.7.
