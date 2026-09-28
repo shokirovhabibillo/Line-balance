@@ -11,7 +11,9 @@ void main() {
   Future<void> open(WidgetTester tester, String title, Type pageType) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
-    await tester.tap(find.text(title));
+    final card = find.text(title).first;
+    await tester.ensureVisible(card);
+    await tester.tap(card);
     await tester.pump();
     for (var i = 0; i < 20 && find.byType(pageType).evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 20));

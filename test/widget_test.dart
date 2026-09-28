@@ -55,8 +55,10 @@ void main() {
 
   testWidgets('Time Check opens after an element is created', (tester) async {
     await openTimeStudy(tester);
-    await tester.tap(find.byKey(const Key('add_work_element')));
-    await tester.pump();
+    final addButton = find.byKey(const Key('add_work_element'));
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('work_element_name')), 'Detalni olish');
     await tester.tap(find.byKey(const Key('work_element_dialog_save')));
     await tester.pump();
