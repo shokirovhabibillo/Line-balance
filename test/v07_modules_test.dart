@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:line_balance_platform/app/app.dart';
 import 'package:line_balance_platform/features/catalog/presentation/catalog_page.dart';
