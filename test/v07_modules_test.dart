@@ -11,9 +11,17 @@ void main() {
   Future<void> open(WidgetTester tester, String title, Type pageType) async {
     SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
-    final card = find.text(title).first;
-    await tester.ensureVisible(card);
-    await tester.tap(card);
+    final keyName = title.toLowerCase().replaceAll(' ', '_');
+    final card = find.byKey(Key('module_card_$keyName'));
+    expect(card, findsOneWidget);
+    await tester.scrollUntilVisible(
+      card,
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pump();
+    expect(card, findsOneWidget);
+    await tester.tap(card, warnIfMissed: true);
     await tester.pump();
     for (var i = 0; i < 20 && find.byType(pageType).evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 20));

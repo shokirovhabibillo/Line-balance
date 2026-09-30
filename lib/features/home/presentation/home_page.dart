@@ -138,6 +138,7 @@ class _ModuleCard extends StatelessWidget {
     final colors = Theme.of(context).colorScheme;
 
     return Card(
+      key: Key('module_card_${module.title.toLowerCase().replaceAll(' ', '_')}'),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
         onTap: () {

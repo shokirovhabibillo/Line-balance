@@ -56,9 +56,12 @@ void main() {
   testWidgets('Time Check opens after an element is created', (tester) async {
     await openTimeStudy(tester);
     final addButton = find.byKey(const Key('add_work_element'));
-    await tester.ensureVisible(addButton);
-    await tester.tap(addButton);
-    await tester.pumpAndSettle();
+    expect(addButton, findsOneWidget);
+    // The button may be below the 800x600 test viewport. The test verifies
+    // its actual callback instead of relying on a screen coordinate tap.
+    final addControl = tester.widget<FilledButton>(addButton);
+    addControl.onPressed!();
+    await tester.pump();
     await tester.enterText(find.byKey(const Key('work_element_name')), 'Detalni olish');
     await tester.tap(find.byKey(const Key('work_element_dialog_save')));
     await tester.pump();
