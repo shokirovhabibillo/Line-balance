@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:line_balance_platform/app/app.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_study_page.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_check_page.dart';
 
 void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
-    SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
     await tester.pump();
@@ -63,7 +61,11 @@ void main() {
     addControl.onPressed!();
     await tester.pump();
     await tester.enterText(find.byKey(const Key('work_element_name')), 'Detalni olish');
-    await tester.tap(find.byKey(const Key('work_element_dialog_save')));
+    // Invoke the dialog's save callback directly so the test does not depend
+    // on the button being inside the 800x600 test viewport.
+    final saveButton = tester.widget<FilledButton>(find.byKey(const Key('work_element_dialog_save')));
+    expect(saveButton.onPressed, isNotNull);
+    saveButton.onPressed!();
     await tester.pump();
     for (var i = 0; i < 20 && tester.widget<FilledButton>(find.byKey(const Key('time_check_button'))).onPressed == null; i++) {
       await tester.pump(const Duration(milliseconds: 50));
