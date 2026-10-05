@@ -33,16 +33,17 @@ void main() {
     final menu = tester.widget<PopupMenuButton<String>>(menuFinder);
     final entries = menu.itemBuilder(tester.element(menuFinder));
     expect(entries.whereType<PopupMenuItem<String>>().length, 3);
-    expect(entries.any((e) => e.key == const Key('excel_import_item')), isTrue);
-    expect(entries.any((e) => e.key == const Key('excel_export_item')), isTrue);
-    expect(entries.any((e) => e.key == const Key('excel_template_item')), isTrue);
+    final values = entries.whereType<PopupMenuItem<String>>().map((e) => e.value).toSet();
+    expect(values, containsAll(<String>{'import', 'export', 'template'}));
   });
 
   testWidgets('work element dialog shows property and measurement options', (tester) async {
     await openTimeStudy(tester);
-    final addButton = tester.widget<FilledButton>(find.byKey(const Key('add_work_element')));
-    addButton.onPressed!();
-    await tester.pump();
+    final addButton = find.byKey(const Key('add_work_element'));
+    expect(addButton, findsOneWidget);
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
     expect(find.byKey(const Key('work_element_dialog_title')), findsOneWidget);
     expect(find.text('Xususiyati'), findsOneWidget);
     expect(find.text('Start + Finish Element'), findsOneWidget);
@@ -55,25 +56,23 @@ void main() {
     await openTimeStudy(tester);
     final addButton = find.byKey(const Key('add_work_element'));
     expect(addButton, findsOneWidget);
-    // The button may be below the 800x600 test viewport. The test verifies
-    // its actual callback instead of relying on a screen coordinate tap.
-    final addControl = tester.widget<FilledButton>(addButton);
-    addControl.onPressed!();
-    await tester.pump();
+    await tester.ensureVisible(addButton);
+    await tester.tap(addButton);
+    await tester.pumpAndSettle();
     await tester.enterText(find.byKey(const Key('work_element_name')), 'Detalni olish');
-    // Invoke the dialog's save callback directly so the test does not depend
-    // on the button being inside the 800x600 test viewport.
-    final saveButton = tester.widget<FilledButton>(find.byKey(const Key('work_element_dialog_save')));
-    expect(saveButton.onPressed, isNotNull);
-    saveButton.onPressed!();
-    await tester.pump();
+    final saveButton = find.byKey(const Key('work_element_dialog_save'));
+    expect(saveButton, findsOneWidget);
+    await tester.ensureVisible(saveButton);
+    await tester.tap(saveButton);
+    await tester.pumpAndSettle();
     for (var i = 0; i < 20 && tester.widget<FilledButton>(find.byKey(const Key('time_check_button'))).onPressed == null; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(find.text('Detalni olish'), findsOneWidget);
-    final timeCheckButton = tester.widget<FilledButton>(find.byKey(const Key('time_check_button')));
-    expect(timeCheckButton.onPressed, isNotNull);
-    timeCheckButton.onPressed!();
+    final timeCheckButton = find.byKey(const Key('time_check_button'));
+    expect(timeCheckButton, findsOneWidget);
+    await tester.ensureVisible(timeCheckButton);
+    await tester.tap(timeCheckButton);
     await tester.pump();
     for (var i = 0; i < 20 && find.byType(TimeCheckPage).evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 50));
