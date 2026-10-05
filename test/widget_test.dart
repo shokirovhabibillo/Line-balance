@@ -3,9 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:line_balance_platform/app/app.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_study_page.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_check_page.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
   Future<void> openTimeStudy(WidgetTester tester) async {
+    SharedPreferences.setMockInitialValues({});
     await tester.pumpWidget(const LineBalanceApp());
     await tester.tap(find.text('Time Study'));
     await tester.pump();
