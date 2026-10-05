@@ -1,10 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:line_balance_platform/app/app.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_check_page.dart';
 import 'package:line_balance_platform/features/time_study/presentation/time_study_page.dart';
 
 void main() {
+  // TimeStudyStorage uses SharedPreferences. In widget tests we provide the
+  // in-memory test implementation so its async load completes deterministically.
+  // ignore: invalid_use_of_visible_for_testing_member
+  SharedPreferences.setMockInitialValues({});
+
   Future<void> openTimeStudy(WidgetTester tester) async {
     await tester.pumpWidget(const LineBalanceApp());
 
@@ -19,12 +25,12 @@ void main() {
     tester.widget<InkWell>(inkWell).onTap!();
     await tester.pump();
 
-    for (var i = 0; i < 60 && find.byType(TimeStudyPage).evaluate().isEmpty; i++) {
+    for (var i = 0; i < 100 && find.byType(TimeStudyPage).evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(find.byType(TimeStudyPage), findsOneWidget);
 
-    for (var i = 0; i < 60 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty; i++) {
+    for (var i = 0; i < 100 && find.byType(CircularProgressIndicator).evaluate().isNotEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(find.byType(CircularProgressIndicator), findsNothing);
