@@ -48,8 +48,6 @@ void main() {
     expect(find.byKey(const Key('work_elements_header')), findsOneWidget);
     expect(find.byKey(const Key('time_study_menu')), findsOneWidget);
     expect(find.byKey(const Key('add_work_element')), findsOneWidget);
-    expect(find.byKey(const Key('time_check_button')), findsOneWidget);
-
     final menu = tester.widget<PopupMenuButton<String>>(
       find.byKey(const Key('time_study_menu')),
     );
@@ -68,7 +66,7 @@ void main() {
     );
     expect(addButton.onPressed, isNotNull);
     addButton.onPressed!();
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('work_element_dialog_title')), findsOneWidget);
     expect(find.byKey(const Key('work_element_name')), findsOneWidget);
@@ -98,23 +96,16 @@ void main() {
     );
     expect(saveButton.onPressed, isNotNull);
     saveButton.onPressed!();
-    await tester.pump();
-
-    for (var i = 0; i < 30; i++) {
-      final button = tester.widget<FilledButton>(
-        find.byKey(const Key('time_check_button')),
-      );
-      if (button.onPressed != null) break;
-      await tester.pump(const Duration(milliseconds: 50));
-    }
+    await tester.pumpAndSettle();
 
     expect(find.text('Detalni olish'), findsOneWidget);
+    expect(find.byKey(const Key('time_check_button')), findsOneWidget);
     final timeCheckButton = tester.widget<FilledButton>(
       find.byKey(const Key('time_check_button')),
     );
     expect(timeCheckButton.onPressed, isNotNull);
     timeCheckButton.onPressed!();
-    await tester.pump();
+    await tester.pumpAndSettle();
 
     for (var i = 0; i < 40 && find.byType(TimeCheckPage).evaluate().isEmpty; i++) {
       await tester.pump(const Duration(milliseconds: 50));
