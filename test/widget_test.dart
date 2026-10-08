@@ -96,9 +96,17 @@ void main() {
     );
     expect(saveButton.onPressed, isNotNull);
     saveButton.onPressed!();
-    await tester.pumpAndSettle();
 
+    // The dialog closes first, then _addElement() resumes asynchronously and
+    // calls setState(). Wait for the actual element and button to enter the tree.
+    for (var i = 0; i < 100 && find.text('Detalni olish').evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     expect(find.text('Detalni olish'), findsOneWidget);
+
+    for (var i = 0; i < 100 && find.byKey(const Key('time_check_button')).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 50));
+    }
     expect(find.byKey(const Key('time_check_button')), findsOneWidget);
     final timeCheckButton = tester.widget<FilledButton>(
       find.byKey(const Key('time_check_button')),
