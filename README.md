@@ -20,3 +20,6 @@ Industrial Engineering, Lean, VSM, Work Measurement and Continuous Improvement p
 Cygma CT / Cygma ET / HPV are not assigned formulas in this version. They remain reserved for the analysis layer until the user's company definitions are supplied.
 
 No AGP/Gradle/Kotlin upgrade was introduced in V0.7.
+
+## V0.7.1 — 4M Foundation
+Adds a first integrated 4M foundation: Man/People, Machine, Material, Method and Workstation views. The People view includes employee cards, company-defined JIT level storage, flexibility matrix values and attendance status. JIT scoring formulas are intentionally not invented; the platform stores the level supplied by the user's/company standard.

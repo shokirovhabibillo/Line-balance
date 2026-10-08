@@ -6,6 +6,7 @@ import '../../line_balance/presentation/line_balance_page.dart';
 import '../../vsm/presentation/vsm_page.dart';
 import '../../downtime/presentation/downtime_page.dart';
 import '../../history/presentation/history_page.dart';
+import '../../four_m/presentation/four_m_page.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -35,6 +36,11 @@ class HomePage extends StatelessWidget {
       'Catalog',
       'Product, Model, Process, Operation va Line',
       Icons.account_tree_outlined,
+    ),
+    _Module(
+      '4M / People',
+      'Man, Machine, Material, Method va Employee',
+      Icons.groups_2_outlined,
     ),
     _Module(
       'History',
@@ -149,6 +155,7 @@ class _ModuleCard extends StatelessWidget {
             'VSM': const VsmPage(),
             'Downtime': const DowntimePage(),
             'History': const HistoryPage(),
+            '4M / People': const FourMPage(),
           };
           final page = pages[module.title];
           if (page != null) {

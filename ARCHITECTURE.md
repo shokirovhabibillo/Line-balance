@@ -16,3 +16,11 @@ Modules remain usable independently. Time Study may later feed Line Balance; Dow
 
 ## Calculation rule
 Only definitions that are explicit in the project scope are calculated. Cygma CT, Cygma ET and HPV are intentionally not given invented formulas.
+
+## V0.7.1 — 4M Foundation
+4M is introduced as an optional platform foundation. Workstation context combines Man, Machine, Material and Method without forcing Time Study, Line Balance, VSM or Downtime dependencies. Future integrations should consume the same IDs/context rather than duplicating data.
+
+People: employee, position, brigade, station, shift, JIT level, flexibility by operation, attendance status.
+Machine: equipment, station, status, cycle time.
+Material: part number, required quantity, available quantity, shortage.
+Method: operation, standard, requirement, verification, with a placeholder for structured Error Proofing/Agar logic.

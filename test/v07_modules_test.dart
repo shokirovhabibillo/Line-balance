@@ -35,4 +35,20 @@ void main() {
   testWidgets('VSM opens', (tester) async => open(tester, 'VSM', VsmPage));
   testWidgets('Downtime opens', (tester) async => open(tester, 'Downtime', DowntimePage));
   testWidgets('History opens', (tester) async => open(tester, 'History', HistoryPage));
+
+  testWidgets('4M / People opens', (tester) async {
+    await tester.pumpWidget(const LineBalanceApp());
+    final card = find.byKey(const Key('module_card_4m_/_people'));
+    expect(card, findsOneWidget);
+    await tester.ensureVisible(card);
+    final inkWell = find.descendant(of: card, matching: find.byType(InkWell));
+    tester.widget<InkWell>(inkWell).onTap!();
+    await tester.pumpAndSettle();
+    expect(find.text('4M Foundation'), findsOneWidget);
+    expect(find.text('Man'), findsOneWidget);
+    expect(find.text('Machine'), findsOneWidget);
+    expect(find.text('Material'), findsOneWidget);
+    expect(find.text('Method'), findsOneWidget);
+  });
+
 }
