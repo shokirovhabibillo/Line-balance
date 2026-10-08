@@ -104,13 +104,20 @@ void main() {
     }
     expect(find.text('Detalni olish'), findsOneWidget);
 
-    for (var i = 0; i < 100 && find.byKey(const Key('time_check_button')).evaluate().isEmpty; i++) {
-      await tester.pump(const Duration(milliseconds: 50));
-    }
-    expect(find.byKey(const Key('time_check_button')), findsOneWidget);
-    final timeCheckButton = tester.widget<FilledButton>(
-      find.byKey(const Key('time_check_button')),
+    final timeCheckFinder = find.byKey(const Key('time_check_button'));
+
+    // Time Check is below the fold inside the Time Study ListView.
+    // Bring it into the test viewport before looking it up.
+    expect(timeCheckFinder, findsOneWidget);
+    await tester.scrollUntilVisible(
+      timeCheckFinder,
+      500,
+      scrollable: find.byType(ListView).first,
     );
+    await tester.pump();
+
+    expect(timeCheckFinder, findsOneWidget);
+    final timeCheckButton = tester.widget<FilledButton>(timeCheckFinder);
     expect(timeCheckButton.onPressed, isNotNull);
     timeCheckButton.onPressed!();
     await tester.pumpAndSettle();
