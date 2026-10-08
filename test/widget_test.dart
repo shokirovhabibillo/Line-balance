@@ -107,14 +107,14 @@ void main() {
     final timeCheckFinder = find.byKey(const Key('time_check_button'));
 
     // Time Check is below the fold inside the Time Study ListView.
-    // Bring it into the test viewport before looking it up.
-    expect(timeCheckFinder, findsOneWidget);
-    await tester.scrollUntilVisible(
-      timeCheckFinder,
-      500,
-      scrollable: find.byType(ListView).first,
-    );
-    await tester.pump();
+    // ListView lazily builds off-screen children, so the button may not exist
+    // in the widget tree yet. Scroll the actual ListView until it is built.
+    final listView = find.byType(ListView).first;
+    expect(listView, findsOneWidget);
+    for (var i = 0; i < 10 && timeCheckFinder.evaluate().isEmpty; i++) {
+      await tester.drag(listView, const Offset(0, -500));
+      await tester.pump();
+    }
 
     expect(timeCheckFinder, findsOneWidget);
     final timeCheckButton = tester.widget<FilledButton>(timeCheckFinder);
