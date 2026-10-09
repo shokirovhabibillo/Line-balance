@@ -34,7 +34,29 @@ void main() {
   testWidgets('Line Balance opens', (tester) async => open(tester, 'Line Balance', LineBalancePage));
   testWidgets('VSM opens', (tester) async => open(tester, 'VSM', VsmPage));
   testWidgets('Downtime opens', (tester) async => open(tester, 'Downtime', DowntimePage));
-  testWidgets('History opens', (tester) async => open(tester, 'History', HistoryPage));
+  testWidgets('History opens', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    await tester.pumpWidget(const LineBalanceApp());
+    final scrollView = find.byType(CustomScrollView);
+    expect(scrollView, findsOneWidget);
+    final historyKey = const Key('module_card_history');
+    for (var i = 0; i < 12 && find.byKey(historyKey).evaluate().isEmpty; i++) {
+      await tester.drag(scrollView, const Offset(0, -500));
+      await tester.pump();
+    }
+    final card = find.byKey(historyKey);
+    expect(card, findsOneWidget);
+    await tester.ensureVisible(card);
+    await tester.pump();
+    final inkWell = find.descendant(of: card, matching: find.byType(InkWell));
+    expect(inkWell, findsOneWidget);
+    tester.widget<InkWell>(inkWell).onTap!();
+    await tester.pump();
+    for (var i = 0; i < 20 && find.byType(HistoryPage).evaluate().isEmpty; i++) {
+      await tester.pump(const Duration(milliseconds: 20));
+    }
+    expect(find.byType(HistoryPage), findsOneWidget);
+  });
 
   testWidgets('4M / People opens', (tester) async {
     await tester.pumpWidget(const LineBalanceApp());
