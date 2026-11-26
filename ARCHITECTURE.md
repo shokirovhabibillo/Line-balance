@@ -24,3 +24,7 @@ People: employee, position, brigade, station, shift, JIT level, flexibility by o
 Machine: equipment, station, status, cycle time.
 Material: part number, required quantity, available quantity, shortage.
 Method: operation, standard, requirement, verification, with a placeholder for structured Error Proofing/Agar logic.
+
+
+## V0.7.2 — 4M People data foundation
+Employee data is stored as JSON in local SharedPreferences under a versioned key. Employee IDs are retained when editing. JIT level and flexibility values are stored without applying an assumed scoring formula. Attendance in this increment is a current employee-card status, not a dated shift attendance ledger. Machine, Material, Method and Workstation views remain reference/sample data until their own CRUD and persistence layer is implemented.

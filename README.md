@@ -23,3 +23,11 @@ No AGP/Gradle/Kotlin upgrade was introduced in V0.7.
 
 ## V0.7.1 — 4M Foundation
 Adds a first integrated 4M foundation: Man/People, Machine, Material, Method and Workstation views. The People view includes employee cards, company-defined JIT level storage, flexibility matrix values and attendance status. JIT scoring formulas are intentionally not invented; the platform stores the level supplied by the user's/company standard.
+
+
+## V0.7.2 — 4M People Data Foundation
+- Employee records can be added and edited.
+- Employee records persist locally through SharedPreferences.
+- Employee profile stores position, brigade, station, shift, company-defined JIT level, flexibility by operation and current attendance status.
+- Flexibility input format: `OP-01:3, OP-02:2`. Levels are stored as supplied; the app does not invent a company scoring scale.
+- Machine, Material, Method and Workstation remain read-only sample/reference views in this increment; full CRUD and workstation linking are subsequent work.
